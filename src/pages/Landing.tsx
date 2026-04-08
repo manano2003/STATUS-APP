@@ -81,6 +81,7 @@ export default function Landing() {
           fontWeight: 800,
           marginBottom: '16px',
           position: 'relative',
+          textAlign: 'center',
         }}>
           מערכת חכמה לניהול קהילות
           <br />
@@ -93,6 +94,7 @@ export default function Landing() {
           maxWidth: '600px',
           marginBottom: '40px',
           position: 'relative',
+          textAlign: 'center',
         }}>
           בימים בהם העורף הוא החזית — קבלת תמונת מצב מהירה ומדויקת היא קריטית להצלת חיים
         </p>
@@ -150,7 +152,7 @@ export default function Landing() {
           <h2 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '12px' }}>
             חווית משתמש
           </h2>
-          <p style={{ color: 'var(--color-accent)', fontSize: '18px', marginBottom: '48px' }}>
+          <p style={{ color: 'var(--color-accent)', fontSize: '18px', marginBottom: '48px' , textAlign: 'center'}}>
             פשוט ומהיר ברגעי לחץ
           </p>
 
@@ -171,7 +173,7 @@ export default function Landing() {
                 <h4 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '8px', color: 'var(--color-accent)' }}>
                   {item.label}
                 </h4>
-                <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>{item.desc}</p>
+                <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)' , textAlign: 'center'}}>{item.desc}</p>
               </div>
             ))}
           </div>

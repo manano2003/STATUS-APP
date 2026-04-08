@@ -74,3 +74,12 @@ img {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-accent);
 }
+
+@keyframes sos-blink {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(232, 77, 77, 0.3); }
+  50% { opacity: 0.5; box-shadow: 0 0 20px rgba(232, 77, 77, 0.8); }
+}
+
+.sos-blink {
+  animation: sos-blink 1s ease-in-out infinite;
+}
