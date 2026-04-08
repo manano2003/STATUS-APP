@@ -1,0 +1,76 @@
+:root {
+  --color-bg-primary: #0A1628;
+  --color-bg-secondary: #0F2137;
+  --color-bg-card: #132A45;
+  --color-accent: #4DA6E8;
+  --color-accent-hover: #6BB8F0;
+  --color-accent-glow: rgba(77, 166, 232, 0.3);
+  --color-text: #FFFFFF;
+  --color-text-secondary: #8BA4BE;
+  --color-border: rgba(77, 166, 232, 0.2);
+  --color-danger: #E84D4D;
+  --color-success: #4DE88A;
+  --color-warning: #E8C54D;
+  --font-family: 'Arial', 'Helvetica Neue', sans-serif;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow-glow: 0 0 20px rgba(77, 166, 232, 0.15);
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text);
+  direction: rtl;
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+input, button, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-card);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
