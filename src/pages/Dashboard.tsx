@@ -2,18 +2,22 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
 import { regularShelters, specialStatuses } from '../data/shelters'
 import { kindergartens } from '../data/kindergartens'
+import { clubs } from '../data/clubs'
 import BackButton from '../components/BackButton'
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { checkins, getShelterPeopleCount, distressAlerts, issueReports, getKindergartenAttendance } = useStore()
+  const { checkins, getShelterPeopleCount, distressAlerts, issueReports, getKindergartenAttendance, getClubAttendance, emergencyStatuses } = useStore()
 
   const totalPeople = [...regularShelters, ...specialStatuses].reduce((sum, s) => sum + getShelterPeopleCount(s.id), 0)
   const totalKidsPresent = kindergartens.reduce((sum, k) => sum + (getKindergartenAttendance(k.id)?.presentChildren.length ?? 0), 0)
+  const totalClubPresent = clubs.reduce((sum, c) => sum + (getClubAttendance(c.id)?.presentChildren.length ?? 0), 0)
 
   const reports = [
     { icon: '🏛️', label: 'נוכחות במקלטים', desc: 'מצב מקלטים בזמן אמת', path: '/dashboard/shelters', count: totalPeople, countLabel: 'נפשות' },
     { icon: '👶', label: 'נוכחות בגנים', desc: 'נוכחות ילדים בגנים', path: '/dashboard/kindergartens', count: totalKidsPresent, countLabel: 'ילדים' },
+    { icon: '⚽', label: 'נוכחות במועדונים', desc: 'נוכחות במועדונים', path: '/dashboard/clubs', count: totalClubPresent, countLabel: 'חניכים' },
+    { icon: '🚨', label: 'סטטוס תושבים בחירום', desc: 'מצב תושבים באירוע חירום', path: '/dashboard/emergency', count: emergencyStatuses.length, countLabel: 'עודכנו' },
     { icon: '🆘', label: 'קריאות מצוקה', desc: 'קריאות מצוקה פעילות', path: '/dashboard/distress', count: distressAlerts.length, countLabel: 'קריאות' },
     { icon: '🔧', label: 'תקלות במקלטים', desc: 'דיווחי תקלות ותחזוקה', path: '/dashboard/issues', count: issueReports.reduce((s, r) => s + r.issues.length, 0), countLabel: 'תקלות' },
   ]

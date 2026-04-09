@@ -26,12 +26,30 @@ import DashboardIssues from './pages/DashboardIssues'
 import DashboardIssueDetail from './pages/DashboardIssueDetail'
 import DashboardHistory from './pages/DashboardHistory'
 import HistoryCheckins from './pages/HistoryCheckins'
+import HistoryShelters from './pages/HistoryShelters'
+import HistoryShelterCalendar from './pages/HistoryShelterCalendar'
+import HistoryShelterDay from './pages/HistoryShelterDay'
 import HistoryIssues from './pages/HistoryIssues'
 import HistoryDistress from './pages/HistoryDistress'
 import Kindergartens from './pages/Kindergartens'
 import KindergartenCheckin from './pages/KindergartenCheckin'
 import DashboardKindergartens from './pages/DashboardKindergartens'
-import ComingSoon from './pages/ComingSoon'
+import HistoryIssueCalendar from './pages/HistoryIssueCalendar'
+import HistoryIssueDay from './pages/HistoryIssueDay'
+import HistoryDistressCalendar from './pages/HistoryDistressCalendar'
+import HistoryDistressDay from './pages/HistoryDistressDay'
+import HistoryKindergartens from './pages/HistoryKindergartens'
+import HistoryKindergartenCalendar from './pages/HistoryKindergartenCalendar'
+import HistoryKindergartenDay from './pages/HistoryKindergartenDay'
+import Clubs from './pages/Clubs'
+import ClubCheckin from './pages/ClubCheckin'
+import DashboardClubs from './pages/DashboardClubs'
+import HistoryClubs from './pages/HistoryClubs'
+import HistoryClubCalendar from './pages/HistoryClubCalendar'
+import HistoryClubDay from './pages/HistoryClubDay'
+import EmergencyStatus from './pages/EmergencyStatus'
+import ResidentStatus from './pages/ResidentStatus'
+import DashboardEmergency from './pages/DashboardEmergency'
 
 export default function App() {
   return (
@@ -62,13 +80,31 @@ export default function App() {
         <Route path="/kindergartens" element={<Kindergartens />} />
         <Route path="/kindergartens/:id" element={<KindergartenCheckin />} />
         <Route path="/dashboard/kindergartens" element={<DashboardKindergartens />} />
-        <Route path="/clubs" element={<ComingSoon title="מועדונים" icon="⚽" />} />
+        <Route path="/clubs" element={<Clubs />} />
+        <Route path="/clubs/:id" element={<ClubCheckin />} />
+        <Route path="/dashboard/clubs" element={<DashboardClubs />} />
+        <Route path="/dashboard/history/clubs" element={<HistoryClubs />} />
+        <Route path="/dashboard/history/clubs/:id" element={<HistoryClubCalendar />} />
+        <Route path="/dashboard/history/clubs/:id/:date" element={<HistoryClubDay />} />
+        <Route path="/emergency-status" element={<EmergencyStatus />} />
+        <Route path="/emergency-status/:id" element={<ResidentStatus />} />
+        <Route path="/dashboard/emergency" element={<DashboardEmergency />} />
         <Route path="/shelter-issues" element={<ShelterIssues />} />
         <Route path="/dashboard/issues" element={<DashboardIssues />} />
         <Route path="/dashboard/issues/:id" element={<DashboardIssueDetail />} />
         <Route path="/dashboard/history" element={<DashboardHistory />} />
         <Route path="/dashboard/history/checkins" element={<HistoryCheckins />} />
+        <Route path="/dashboard/history/shelters" element={<HistoryShelters />} />
+        <Route path="/dashboard/history/shelters/:id" element={<HistoryShelterCalendar />} />
+        <Route path="/dashboard/history/shelters/:id/:date" element={<HistoryShelterDay />} />
         <Route path="/dashboard/history/issues" element={<HistoryIssues />} />
+        <Route path="/dashboard/history/issues/:id" element={<HistoryIssueCalendar />} />
+        <Route path="/dashboard/history/issues/:id/:date" element={<HistoryIssueDay />} />
+        <Route path="/dashboard/history/distress/:type" element={<HistoryDistressCalendar />} />
+        <Route path="/dashboard/history/distress/:type/:date" element={<HistoryDistressDay />} />
+        <Route path="/dashboard/history/kindergartens" element={<HistoryKindergartens />} />
+        <Route path="/dashboard/history/kindergartens/:id" element={<HistoryKindergartenCalendar />} />
+        <Route path="/dashboard/history/kindergartens/:id/:date" element={<HistoryKindergartenDay />} />
         <Route path="/dashboard/history/distress" element={<HistoryDistress />} />
       </Routes>
       <BottomNav />

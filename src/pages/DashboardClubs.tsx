@@ -1,24 +1,24 @@
 import { useState } from 'react'
-import { kindergartens } from '../data/kindergartens'
+import { clubs } from '../data/clubs'
 import { useStore } from '../data/store'
 import BackButton from '../components/BackButton'
 import ExportButtons from '../components/ExportButtons'
 
-export default function DashboardKindergartens() {
-  const { getKindergartenAttendance } = useStore()
+export default function DashboardClubs() {
+  const { getClubAttendance } = useStore()
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
-  const totalChildren = kindergartens.reduce((sum, k) => sum + k.children.length, 0)
-  const totalStaff = kindergartens.reduce((sum, k) => sum + k.staff.length, 0)
+  const totalChildren = clubs.reduce((sum, k) => sum + k.children.length, 0)
+  const totalStaff = clubs.reduce((sum, k) => sum + k.staff.length, 0)
   const totalAll = totalChildren + totalStaff
 
-  const presentChildren = kindergartens.reduce((sum, k) => {
-    const att = getKindergartenAttendance(k.id)
+  const presentChildren = clubs.reduce((sum, k) => {
+    const att = getClubAttendance(k.id)
     if (!att) return sum
     return sum + att.presentChildren.filter(name => k.children.includes(name)).length
   }, 0)
-  const presentStaff = kindergartens.reduce((sum, k) => {
-    const att = getKindergartenAttendance(k.id)
+  const presentStaff = clubs.reduce((sum, k) => {
+    const att = getClubAttendance(k.id)
     if (!att) return sum
     return sum + att.presentChildren.filter(name => k.staff.includes(name)).length
   }, 0)
@@ -29,7 +29,7 @@ export default function DashboardKindergartens() {
       <BackButton to="/dashboard" />
 
       <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '12px', textAlign: 'center' }}>
-        👶 נוכחות בגנים
+        נוכחות במועדונים
       </h1>
 
       {/* 3 Summary Boxes */}
@@ -74,15 +74,15 @@ export default function DashboardKindergartens() {
         border: '1px solid var(--color-border)',
         overflow: 'hidden',
       }}>
-        {kindergartens.map(kg => {
-          const att = getKindergartenAttendance(kg.id)
+        {clubs.map(club => {
+          const att = getClubAttendance(club.id)
           const present = att?.presentChildren.length ?? 0
-          const isExpanded = expandedId === kg.id
+          const isExpanded = expandedId === club.id
 
           return (
-            <div key={kg.id}>
+            <div key={club.id}>
               <div
-                onClick={() => setExpandedId(isExpanded ? null : kg.id)}
+                onClick={() => setExpandedId(isExpanded ? null : club.id)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
                   padding: '12px 14px', borderBottom: '1px solid var(--color-border)',
@@ -92,12 +92,12 @@ export default function DashboardKindergartens() {
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(77, 166, 232, 0.05)'}
                 onMouseLeave={e => { if (!isExpanded) e.currentTarget.style.background = 'transparent' }}
               >
-                <span style={{ fontSize: '13px', fontWeight: 700, flex: 1 }}>{kg.name}</span>
+                <span style={{ fontSize: '13px', fontWeight: 700, flex: 1 }}>{club.name}</span>
                 <span style={{
                   fontSize: '13px', fontWeight: 800,
                   color: present > 0 ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                 }}>
-                  {present}/{kg.children.length}
+                  {present}/{club.children.length}
                 </span>
               </div>
 
@@ -107,7 +107,7 @@ export default function DashboardKindergartens() {
                   background: 'rgba(77, 166, 232, 0.03)',
                 }}>
                   {/* Present children first, then absent */}
-                  {[...kg.children]
+                  {[...club.children]
                     .sort((a, b) => {
                       const aPresent = att?.presentChildren.includes(a) ? 0 : 1
                       const bPresent = att?.presentChildren.includes(b) ? 0 : 1
@@ -135,7 +135,7 @@ export default function DashboardKindergartens() {
                       )
                     })}
                   {/* Staff */}
-                  {kg.staff.length > 0 && (
+                  {club.staff.length > 0 && (
                     <>
                       <div style={{
                         padding: '6px 0', marginTop: '6px', borderTop: '1px solid var(--color-border)',
@@ -143,7 +143,7 @@ export default function DashboardKindergartens() {
                       }}>
                         סגל חינוכי
                       </div>
-                      {kg.staff.map(member => {
+                      {club.staff.map(member => {
                         const isPresent = att?.presentChildren.includes(member) ?? false
                         return (
                           <div key={member} style={{
@@ -179,24 +179,24 @@ export default function DashboardKindergartens() {
       </div>
 
       <ExportButtons
-        title="דוח נוכחות בגנים"
+        title="דוח נוכחות במועדונים"
         getText={() => {
           let text = `סה"כ נוכחים: ${totalPresent} מתוך ${totalChildren} (${totalChildren > 0 ? Math.round((totalPresent / totalChildren) * 100) : 0}%)\n\n`
-          kindergartens.forEach(kg => {
-            const att = getKindergartenAttendance(kg.id)
+          clubs.forEach(club => {
+            const att = getClubAttendance(club.id)
             const p = att?.presentChildren.length ?? 0
-            text += `${kg.name}: ${p}/${kg.children.length}\n`
+            text += `${club.name}: ${p}/${club.children.length}\n`
             if (att) att.presentChildren.forEach(c => { text += `  ✓ ${c}\n` })
           })
           return text
         }}
         getTableData={() => {
-          const headers = ['גן', 'שם ילד', 'נוכחות']
+          const headers = ['מועדון', 'שם ילד', 'נוכחות']
           const rows: string[][] = []
-          kindergartens.forEach(kg => {
-            const att = getKindergartenAttendance(kg.id)
-            kg.children.forEach(child => {
-              rows.push([kg.name, child, att?.presentChildren.includes(child) ? 'נוכח' : 'חסר'])
+          clubs.forEach(club => {
+            const att = getClubAttendance(club.id)
+            club.children.forEach(child => {
+              rows.push([club.name, child, att?.presentChildren.includes(child) ? 'נוכח' : 'חסר'])
             })
           })
           return { headers, rows }

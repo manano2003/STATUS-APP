@@ -5,6 +5,7 @@ const tabs = [
   { path: '/kindergartens', label: 'גנים', icon: '👶', grayscale: true },
   { path: '/clubs', label: 'מועדונים', icon: '⚽' },
   { path: '/shelter-issues', label1: 'תקלות', label2: 'במקלטים', icon: '🔧' },
+  { path: '/emergency-status', label1: 'עדכון', label2: 'תושבים', icon: '🚨' },
   { path: '/dashboard', label: 'חמ"ל', icon: '📊' },
 ]
 

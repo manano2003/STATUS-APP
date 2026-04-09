@@ -4,16 +4,32 @@ import BackButton from '../components/BackButton'
 
 export default function DashboardHistory() {
   const navigate = useNavigate()
-  const { checkinHistory, issueHistory, distressHistory } = useStore()
+  const { shelterHistory, issueHistory, distressHistory, kindergartenHistory, clubHistory } = useStore()
 
   const cards = [
     {
       icon: '🏛️',
       label: 'נוכחות במקלטים',
-      description: 'היסטוריית כניסות למקלטים',
-      path: '/dashboard/history/checkins',
-      count: checkinHistory.length,
+      description: 'היסטוריית נוכחות לפי מקלט ותאריך',
+      path: '/dashboard/history/shelters',
+      count: shelterHistory.length,
       color: 'var(--color-accent)',
+    },
+    {
+      icon: '👶',
+      label: 'נוכחות בגנים',
+      description: 'היסטוריית נוכחות יומית בגנים',
+      path: '/dashboard/history/kindergartens',
+      count: kindergartenHistory.length,
+      color: 'var(--color-success)',
+    },
+    {
+      icon: '⚽',
+      label: 'נוכחות במועדונים',
+      description: 'היסטוריית נוכחות יומית במועדונים',
+      path: '/dashboard/history/clubs',
+      count: clubHistory.length,
+      color: 'var(--color-warning)',
     },
     {
       icon: '🔧',

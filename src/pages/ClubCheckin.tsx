@@ -1,18 +1,18 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { getKindergartenById } from '../data/kindergartens'
+import { getClubById } from '../data/clubs'
 import { useStore } from '../data/store'
 import Button from '../components/Button'
 import BackButton from '../components/BackButton'
 
-export default function KindergartenCheckin() {
+export default function ClubCheckin() {
   const { id } = useParams<{ id: string }>()
-  const { currentUser, getKindergartenAttendance, setKindergartenAttendance } = useStore()
+  const { currentUser, getClubAttendance, setClubAttendance } = useStore()
 
-  const kg = id ? getKindergartenById(id) : undefined
-  if (!kg) return <div style={{ paddingTop: '100px', textAlign: 'center' }}>גן לא נמצא</div>
+  const club = id ? getClubById(id) : undefined
+  if (!club) return <div style={{ paddingTop: '100px', textAlign: 'center' }}>מועדון לא נמצא</div>
 
-  const existing = getKindergartenAttendance(kg.id)
+  const existing = getClubAttendance(club.id)
   const [checked, setChecked] = useState<Set<string>>(new Set(existing?.presentChildren ?? []))
   const [saved, setSaved] = useState(false)
 
@@ -27,27 +27,27 @@ export default function KindergartenCheckin() {
   }
 
   const handleSave = () => {
-    setKindergartenAttendance({
-      kindergartenId: kg.id,
+    setClubAttendance({
+      kindergartenId: club.id,
       presentChildren: Array.from(checked),
       timestamp: Date.now(),
-      reportedBy: currentUser?.fullName ?? 'גננת',
+      reportedBy: currentUser?.fullName ?? 'מדריך',
     })
     setSaved(true)
   }
 
   return (
     <div style={{ paddingTop: '68px', padding: '68px 16px 80px', maxWidth: '500px', margin: '0 auto' }}>
-      <BackButton to="/kindergartens" />
+      <BackButton to="/clubs" />
 
       <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        {kg.name}
+        {club.name}
       </h1>
       <p style={{ color: 'var(--color-accent)', fontSize: '18px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        נוכחים: {checked.size} מתוך {kg.children.length}
+        נוכחים: {checked.size} מתוך {club.children.length}
       </p>
       <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
-        {kg.children.length > 0 ? Math.round((checked.size / kg.children.length) * 100) : 0}% נוכחות
+        {club.children.length > 0 ? Math.round((checked.size / club.children.length) * 100) : 0}% נוכחות
       </p>
 
       <div style={{
@@ -57,7 +57,7 @@ export default function KindergartenCheckin() {
         overflow: 'hidden',
         marginBottom: '16px',
       }}>
-        {kg.children.map((child) => {
+        {club.children.map((child) => {
           const isPresent = checked.has(child)
           return (
             <div
@@ -91,7 +91,7 @@ export default function KindergartenCheckin() {
         })}
 
         {/* Staff separator */}
-        {kg.staff.length > 0 && (
+        {club.staff.length > 0 && (
           <>
             <div style={{
               padding: '10px 14px',
@@ -104,7 +104,7 @@ export default function KindergartenCheckin() {
             }}>
               סגל חינוכי
             </div>
-            {kg.staff.map((member, i) => {
+            {club.staff.map((member, i) => {
               const isPresent = checked.has(member)
               return (
                 <div
@@ -113,7 +113,7 @@ export default function KindergartenCheckin() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: '12px',
                     padding: '12px 14px',
-                    borderBottom: i < kg.staff.length - 1 ? '1px solid var(--color-border)' : 'none',
+                    borderBottom: i < club.staff.length - 1 ? '1px solid var(--color-border)' : 'none',
                     cursor: 'pointer',
                     background: isPresent ? 'rgba(77, 166, 232, 0.05)' : 'transparent',
                   }}
@@ -150,13 +150,13 @@ export default function KindergartenCheckin() {
 
       <button
         onClick={() => {
-          if (confirm('האם למחוק את כל הנוכחות בגן?')) {
+          if (confirm('האם למחוק את כל הנוכחות במועדון?')) {
             setChecked(new Set())
-            setKindergartenAttendance({
-              kindergartenId: kg.id,
+            setClubAttendance({
+              kindergartenId: club.id,
               presentChildren: [],
               timestamp: Date.now(),
-              reportedBy: currentUser?.fullName ?? 'גננת',
+              reportedBy: currentUser?.fullName ?? 'מדריך',
             })
             setSaved(false)
           }

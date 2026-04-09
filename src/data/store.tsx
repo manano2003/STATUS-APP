@@ -53,6 +53,46 @@ export interface ShelterIssueReport {
   timestamp: number
 }
 
+export type EmergencyStatusType = 'located-healthy' | 'located-evacuated' | 'missing' | 'harduf'
+
+export interface ResidentEmergencyStatus {
+  residentId: string
+  status: EmergencyStatusType
+  updatedBy: string
+  updatedAt: number
+}
+
+export const EMERGENCY_STATUS_LABELS: Record<EmergencyStatusType, string> = {
+  'located-healthy': 'מאותר-בריא',
+  'located-evacuated': 'מאותר-מפונה',
+  'missing': 'נעדר',
+  'harduf': 'הרדוף',
+}
+
+export const EMERGENCY_STATUS_COLORS: Record<EmergencyStatusType, string> = {
+  'located-healthy': '#4DE88A',
+  'located-evacuated': '#4DA6E8',
+  'missing': '#E84D4D',
+  'harduf': '#E8C54D',
+}
+
+export interface ShelterDailySnapshot {
+  id: string
+  shelterId: string
+  date: string
+  checkins: { userName: string; userPhone: string; userHouseNumber: string; peopleCount: number; isGuest?: boolean }[]
+  timestamp: number
+}
+
+export interface KindergartenDailySnapshot {
+  id: string
+  kindergartenId: string
+  date: string // YYYY-MM-DD
+  presentChildren: string[]
+  reportedBy: string
+  timestamp: number
+}
+
 export interface CheckinHistoryEntry {
   id: string
   shelterId: string
@@ -116,10 +156,22 @@ interface StoreState {
   kindergartenAttendance: KindergartenAttendance[]
   setKindergartenAttendance: (attendance: KindergartenAttendance) => void
   getKindergartenAttendance: (kindergartenId: string) => KindergartenAttendance | undefined
+  shelterHistory: ShelterDailySnapshot[]
+  kindergartenHistory: KindergartenDailySnapshot[]
+  saveKindergartenSnapshot: (snapshot: KindergartenDailySnapshot) => void
   checkinHistory: CheckinHistoryEntry[]
   issueHistory: IssueHistoryEntry[]
   distressHistory: DistressHistoryEntry[]
   clearUserCheckinHistory: (userId: string) => void
+  clubAttendance: KindergartenAttendance[]
+  setClubAttendance: (attendance: KindergartenAttendance) => void
+  getClubAttendance: (clubId: string) => KindergartenAttendance | undefined
+  clubHistory: KindergartenDailySnapshot[]
+  emergencyStatuses: ResidentEmergencyStatus[]
+  setResidentStatus: (status: ResidentEmergencyStatus) => void
+  getResidentStatus: (residentId: string) => ResidentEmergencyStatus | undefined
+  clearAllEmergencyStatuses: () => void
+  removeResidentStatus: (residentId: string) => void
 }
 
 const DEFAULT_ROLES = ['USR', 'ADMIN', 'מנהל מקלט', 'גננת', 'מועדונים']
@@ -140,11 +192,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const filtered = prev.filter(a => a.kindergartenId !== attendance.kindergartenId)
       return [...filtered, attendance]
     })
+    // Auto-save to history
+    if (attendance.presentChildren.length > 0) {
+      const today = new Date().toISOString().split('T')[0]
+      setKindergartenHistory(prev => {
+        const filtered = prev.filter(s => !(s.kindergartenId === attendance.kindergartenId && s.date === today))
+        return [...filtered, {
+          id: Date.now().toString(),
+          kindergartenId: attendance.kindergartenId,
+          date: today,
+          presentChildren: attendance.presentChildren,
+          reportedBy: attendance.reportedBy,
+          timestamp: Date.now(),
+        }]
+      })
+    }
   }, [])
 
   const getKindergartenAttendance = useCallback((kindergartenId: string) => {
     return kindergartenAttendance.find(a => a.kindergartenId === kindergartenId)
   }, [kindergartenAttendance])
+
+  const [shelterHistory, setShelterHistory] = useState<ShelterDailySnapshot[]>([])
+  const [kindergartenHistory, setKindergartenHistory] = useState<KindergartenDailySnapshot[]>([])
+
+  const saveKindergartenSnapshot = useCallback((snapshot: KindergartenDailySnapshot) => {
+    setKindergartenHistory(prev => {
+      const filtered = prev.filter(s => !(s.kindergartenId === snapshot.kindergartenId && s.date === snapshot.date))
+      return [...filtered, snapshot]
+    })
+  }, [])
 
   const [checkinHistory, setCheckinHistory] = useState<CheckinHistoryEntry[]>([])
   const [issueHistory, setIssueHistory] = useState<IssueHistoryEntry[]>([])
@@ -160,11 +237,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addCheckin = useCallback((checkin: ShelterCheckin) => {
-    // Log to history
+    // Log to checkin history
     setCheckinHistory(h => [...h, {
       id: Date.now().toString(),
       shelterId: checkin.shelterId,
-      shelterName: checkin.shelterId, // will be resolved in display
+      shelterName: checkin.shelterId,
       userId: checkin.userId,
       userName: checkin.userName,
       userPhone: checkin.userPhone,
@@ -175,7 +252,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }])
     setCheckins(prev => {
       const filtered = prev.filter(c => c.userId !== checkin.userId)
-      return [...filtered, checkin]
+      const newCheckins = [...filtered, checkin]
+      // Save daily shelter snapshot
+      const today = new Date().toISOString().split('T')[0]
+      const shelterCheckins = newCheckins.filter(c => c.shelterId === checkin.shelterId)
+      setShelterHistory(h => {
+        const filtered2 = h.filter(s => !(s.shelterId === checkin.shelterId && s.date === today))
+        return [...filtered2, {
+          id: Date.now().toString(),
+          shelterId: checkin.shelterId,
+          date: today,
+          checkins: shelterCheckins.map(c => ({
+            userName: c.userName, userPhone: c.userPhone,
+            userHouseNumber: c.userHouseNumber, peopleCount: c.peopleCount, isGuest: c.isGuest,
+          })),
+          timestamp: Date.now(),
+        }]
+      })
+      return newCheckins
     })
   }, [])
 
@@ -281,6 +375,55 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return issueReports.find(r => r.shelterId === shelterId)
   }, [issueReports])
 
+  const [emergencyStatuses, setEmergencyStatuses] = useState<ResidentEmergencyStatus[]>([])
+
+  const setResidentStatus = useCallback((status: ResidentEmergencyStatus) => {
+    setEmergencyStatuses(prev => {
+      const filtered = prev.filter(s => s.residentId !== status.residentId)
+      return [...filtered, status]
+    })
+  }, [])
+
+  const getResidentStatus = useCallback((residentId: string) => {
+    return emergencyStatuses.find(s => s.residentId === residentId)
+  }, [emergencyStatuses])
+
+  const clearAllEmergencyStatuses = useCallback(() => {
+    setEmergencyStatuses([])
+  }, [])
+
+  const removeResidentStatus = useCallback((residentId: string) => {
+    setEmergencyStatuses(prev => prev.filter(s => s.residentId !== residentId))
+  }, [])
+
+  const [clubAttendance, setClubAttendanceState] = useState<KindergartenAttendance[]>([])
+  const [clubHistory, setClubHistory] = useState<KindergartenDailySnapshot[]>([])
+
+  const setClubAttendance = useCallback((attendance: KindergartenAttendance) => {
+    setClubAttendanceState(prev => {
+      const filtered = prev.filter(a => a.kindergartenId !== attendance.kindergartenId)
+      return [...filtered, attendance]
+    })
+    if (attendance.presentChildren.length > 0) {
+      const today = new Date().toISOString().split('T')[0]
+      setClubHistory(prev => {
+        const filtered = prev.filter(s => !(s.kindergartenId === attendance.kindergartenId && s.date === today))
+        return [...filtered, {
+          id: Date.now().toString(),
+          kindergartenId: attendance.kindergartenId,
+          date: today,
+          presentChildren: attendance.presentChildren,
+          reportedBy: attendance.reportedBy,
+          timestamp: Date.now(),
+        }]
+      })
+    }
+  }, [])
+
+  const getClubAttendance = useCallback((clubId: string) => {
+    return clubAttendance.find(a => a.kindergartenId === clubId)
+  }, [clubAttendance])
+
   const clearUserCheckinHistory = useCallback((userId: string) => {
     setCheckinHistory(prev => prev.filter(h => h.userId !== userId))
   }, [])
@@ -311,7 +454,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       getUserCheckin, clearAllCheckins, clearShelterCheckins,
       distressAlerts, addDistressAlert, deleteDistressAlert, clearAllDistressAlerts,
       issueReports, addIssueReport, removeIssue, getShelterIssues, clearAllIssueReports,
-      kindergartenAttendance, setKindergartenAttendance, getKindergartenAttendance,
+          kindergartenAttendance, setKindergartenAttendance, getKindergartenAttendance,
+      shelterHistory, kindergartenHistory, saveKindergartenSnapshot,
+      emergencyStatuses, setResidentStatus, getResidentStatus, clearAllEmergencyStatuses, removeResidentStatus,
+      clubAttendance, setClubAttendance, getClubAttendance, clubHistory,
       checkinHistory, issueHistory, distressHistory, clearUserCheckinHistory,
     }}>
       {children}

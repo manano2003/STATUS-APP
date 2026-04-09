@@ -14,6 +14,7 @@ const navItems: NavItem[] = [
   { path: '/kindergartens', label: 'גני ילדים', icon: '👶' },
   { path: '/clubs', label: 'מועדונים', icon: '⚽' },
   { path: '/shelter-issues', label: 'תקלות במקלטים', icon: '🔧' },
+  { path: '/emergency-status', label: 'עדכון תושבים', icon: '🚨' },
   { path: '/dashboard', label: 'חמ"ל', icon: '📊' },
   { path: '/admin/users', label: 'ניהול משתמשים', icon: '👥', adminOnly: true },
   { path: '/admin/shelters', label: 'סיכום מקלטים', icon: '📋', adminOnly: true },

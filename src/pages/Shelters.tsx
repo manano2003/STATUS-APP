@@ -16,7 +16,7 @@ export default function Shelters() {
       {/* Shelter Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
+        gridTemplateColumns: 'repeat(2, 1fr)',
         gap: '10px',
         marginBottom: '48px',
       }}>
