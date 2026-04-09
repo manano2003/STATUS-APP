@@ -9,7 +9,8 @@ export default function Kindergartens() {
 
   const totalPresent = kindergartens.reduce((sum, k) => {
     const att = getKindergartenAttendance(k.id)
-    return sum + (att?.presentChildren.length ?? 0)
+    if (!att) return sum
+    return sum + att.presentChildren.filter(name => k.children.includes(name)).length
   }, 0)
 
   const totalChildren = kindergartens.reduce((sum, k) => sum + k.children.length, 0)
@@ -35,7 +36,7 @@ export default function Kindergartens() {
       }}>
         {kindergartens.map(k => {
           const att = getKindergartenAttendance(k.id)
-          const present = att?.presentChildren.length ?? 0
+          const present = att ? att.presentChildren.filter(name => k.children.includes(name)).length : 0
           return (
             <button
               key={k.id}

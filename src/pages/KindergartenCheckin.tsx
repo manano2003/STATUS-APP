@@ -43,12 +43,20 @@ export default function KindergartenCheckin() {
       <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
         {kg.name}
       </h1>
-      <p style={{ color: 'var(--color-accent)', fontSize: '18px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        נוכחים: {checked.size} מתוך {kg.children.length}
-      </p>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
-        {kg.children.length > 0 ? Math.round((checked.size / kg.children.length) * 100) : 0}% נוכחות
-      </p>
+      {(() => {
+        const presentKids = kg.children.filter(c => checked.has(c)).length
+        const pct = kg.children.length > 0 ? Math.round((presentKids / kg.children.length) * 100) : 0
+        return (
+          <>
+            <p style={{ color: 'var(--color-accent)', fontSize: '18px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
+              נוכחים: {presentKids} מתוך {kg.children.length}
+            </p>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
+              {pct}% נוכחות
+            </p>
+          </>
+        )
+      })()}
 
       <div style={{
         background: 'var(--color-bg-card)',

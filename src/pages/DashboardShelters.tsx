@@ -29,7 +29,7 @@ export default function DashboardShelters() {
         border: '1px solid var(--color-border)',
         overflow: 'hidden',
       }}>
-        {regularShelters.map(shelter => {
+        {[...regularShelters].sort((a, b) => getShelterPeopleCount(b.id) - getShelterPeopleCount(a.id)).map(shelter => {
           const count = getShelterPeopleCount(shelter.id)
           const traffic = getTrafficLight(count)
           const barPercent = Math.min((count / MAX_CAPACITY) * 100, 100)

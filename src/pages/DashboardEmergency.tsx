@@ -43,7 +43,7 @@ export default function DashboardEmergency() {
       <BackButton to="/dashboard" />
 
       <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        🚨 סטטוס תושבים בחירום
+        🚨 עדכון תושבים
       </h1>
       <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '4px', textAlign: 'center' }}>
         {emergencyStatuses.length}/{residents.length} עודכנו

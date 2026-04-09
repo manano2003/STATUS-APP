@@ -50,6 +50,7 @@ import HistoryClubDay from './pages/HistoryClubDay'
 import EmergencyStatus from './pages/EmergencyStatus'
 import ResidentStatus from './pages/ResidentStatus'
 import DashboardEmergency from './pages/DashboardEmergency'
+import ShelterQRCodes from './pages/ShelterQRCodes'
 
 export default function App() {
   return (
@@ -86,6 +87,7 @@ export default function App() {
         <Route path="/dashboard/history/clubs" element={<HistoryClubs />} />
         <Route path="/dashboard/history/clubs/:id" element={<HistoryClubCalendar />} />
         <Route path="/dashboard/history/clubs/:id/:date" element={<HistoryClubDay />} />
+        <Route path="/dashboard/qrcodes" element={<ShelterQRCodes />} />
         <Route path="/emergency-status" element={<EmergencyStatus />} />
         <Route path="/emergency-status/:id" element={<ResidentStatus />} />
         <Route path="/dashboard/emergency" element={<DashboardEmergency />} />

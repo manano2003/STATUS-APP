@@ -43,12 +43,20 @@ export default function ClubCheckin() {
       <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
         {club.name}
       </h1>
-      <p style={{ color: 'var(--color-accent)', fontSize: '18px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        נוכחים: {checked.size} מתוך {club.children.length}
-      </p>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
-        {club.children.length > 0 ? Math.round((checked.size / club.children.length) * 100) : 0}% נוכחות
-      </p>
+      {(() => {
+        const presentKids = club.children.filter(c => checked.has(c)).length
+        const pct = club.children.length > 0 ? Math.round((presentKids / club.children.length) * 100) : 0
+        return (
+          <>
+            <p style={{ color: 'var(--color-accent)', fontSize: '18px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
+              נוכחים: {presentKids} מתוך {club.children.length}
+            </p>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
+              {pct}% נוכחות
+            </p>
+          </>
+        )
+      })()}
 
       <div style={{
         background: 'var(--color-bg-card)',

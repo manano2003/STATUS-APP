@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
 import { kindergartens } from '../data/kindergartens'
 import { clubs } from '../data/clubs'
+import { regularShelters } from '../data/shelters'
 import BackButton from '../components/BackButton'
 
 interface SourceCard {
@@ -20,6 +21,7 @@ export default function DashboardSources() {
     { icon: '👥', label: 'רשומים במערכת', description: 'כל המשתמשים הרשומים ופרטיהם', path: '/dashboard/users', count: users.length },
     { icon: '👶', label: 'ילדים בגנים', description: 'רשימות ילדים לפי גן', path: '/kindergartens', count: kindergartens.reduce((s, k) => s + k.children.length, 0) },
     { icon: '⚽', label: 'מועדונים', description: 'חברי מועדונים וקבוצות ספורט', path: '/clubs', count: clubs.reduce((s, c) => s + c.children.length, 0) },
+    { icon: '📱', label: 'ברקודים למקלטים', description: 'הדפסת QR לכל מקלט', path: '/dashboard/qrcodes', count: regularShelters.length },
   ]
 
   return (

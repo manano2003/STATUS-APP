@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getDistressTypeInfo } from '../data/distressTypes'
+import { emergencyContacts } from '../data/emergencyContacts'
 import { useStore, type DistressType } from '../data/store'
 import Button from '../components/Button'
 import BackButton from '../components/BackButton'
@@ -61,7 +62,8 @@ export default function DistressConfirm() {
       timestamp: Date.now(),
     })
 
-    // Send WhatsApp to command center contacts
+    // Send WhatsApp to all contacts for this event type
+    const contacts = emergencyContacts[typeInfo.id]
     const msg = encodeURIComponent(
       `🚨 קריאת מצוקה - ${typeInfo.label}\n\n` +
       `שם: ${userName}\n` +
@@ -70,7 +72,12 @@ export default function DistressConfirm() {
       `ישוב: ${city || 'לא צוין'}\n\n` +
       `נשלח מאפליקציית STATUS`
     )
-    window.open(`https://wa.me/?text=${msg}`, '_blank')
+    // Open WhatsApp for each contact
+    contacts.forEach((contact, i) => {
+      setTimeout(() => {
+        window.open(`https://wa.me/972${contact.phone}?text=${msg}`, '_blank')
+      }, i * 500)
+    })
 
     setSubmitted(true)
   }

@@ -50,14 +50,13 @@ export default function Shelters() {
             >
               <div style={{
                 width: '100%',
-                height: '80px',
+                height: '100px',
                 overflow: 'hidden',
-                position: 'relative',
               }}>
                 <img
                   src={shelter.imageUrl}
                   alt={shelter.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', display: 'block' }}
                   loading="lazy"
                 />
               </div>
