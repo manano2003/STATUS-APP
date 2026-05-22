@@ -1,13 +1,93 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { regularShelters, specialStatuses, getTrafficLight } from '../data/shelters'
+import { regularShelters, specialStatuses, getTrafficLight, getShelterById } from '../data/shelters'
 import { useStore } from '../data/store'
 
 export default function Shelters() {
   const navigate = useNavigate()
-  const { getShelterPeopleCount } = useStore()
+  const { getShelterPeopleCount, currentUser, getUserCheckin, removeCheckin, lastCheckinUserId } = useStore()
+  const [showConfirm, setShowConfirm] = useState(false)
+
+  const effectiveUserId = currentUser?.id ?? lastCheckinUserId
+  const userCheckin = effectiveUserId ? getUserCheckin(effectiveUserId) : undefined
+  const shelterName = userCheckin ? getShelterById(userCheckin.shelterId)?.name ?? userCheckin.shelterId : ''
 
   return (
     <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '1100px', margin: '0 auto' }}>
+
+      {userCheckin && (
+        <div style={{
+          background: 'rgba(77, 166, 232, 0.1)',
+          border: '1px solid var(--color-accent)',
+          borderRadius: 'var(--radius)',
+          padding: '12px 16px',
+          marginBottom: '20px',
+          textAlign: 'center',
+        }}>
+          <p style={{ margin: '0 0 10px', fontSize: '14px', color: 'var(--color-text)' }}>
+            נמצא/ת כרגע ב: <strong>{shelterName}</strong>
+          </p>
+          {!showConfirm ? (
+            <button
+              onClick={() => setShowConfirm(true)}
+              style={{
+                background: '#E84D4D',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 'var(--radius-sm)',
+                padding: '10px 32px',
+                fontSize: '15px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              יצאתי מהמקלט
+            </button>
+          ) : (
+            <div>
+              <p style={{ margin: '0 0 10px', fontSize: '13px', color: 'var(--color-text-secondary)' }}>
+                בטוח שיצאת מ{shelterName}?
+              </p>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                <button
+                  onClick={() => {
+                    removeCheckin(effectiveUserId!)
+                    setShowConfirm(false)
+                  }}
+                  style={{
+                    background: '#E84D4D',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '8px 24px',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  כן, יצאתי
+                </button>
+                <button
+                  onClick={() => setShowConfirm(false)}
+                  style={{
+                    background: 'transparent',
+                    color: 'var(--color-text-secondary)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '8px 24px',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  ביטול
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px', textAlign: 'center' }}>מקלטים</h1>
       <p style={{ color: 'var(--color-text-secondary)', marginBottom: '32px', textAlign: 'center' }}>
         בחר מקלט לדיווח כניסה

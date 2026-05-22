@@ -33,7 +33,7 @@ export default function Header() {
     <>
       <header style={{
         position: 'fixed',
-        top: 0,
+        top: 'var(--banner-height, 0px)',
         right: 0,
         left: 0,
         zIndex: 100,
@@ -93,7 +93,7 @@ export default function Header() {
         <div
           style={{
             position: 'fixed',
-            top: '56px',
+            top: 'calc(56px + var(--banner-height, 0px))',
             right: 0,
             left: 0,
             bottom: 0,

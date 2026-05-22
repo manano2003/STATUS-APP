@@ -7,7 +7,7 @@ import './styles/global.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/STATUS-APP">
       <StoreProvider>
         <App />
       </StoreProvider>

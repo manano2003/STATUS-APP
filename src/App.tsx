@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Header from './components/Header'
 import BottomNav from './components/BottomNav'
@@ -53,8 +54,41 @@ import DashboardEmergency from './pages/DashboardEmergency'
 import ShelterQRCodes from './pages/ShelterQRCodes'
 
 export default function App() {
+  const [autoRefresh, setAutoRefresh] = useState(false)
+  const intervalRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (autoRefresh) {
+      intervalRef.current = window.setInterval(() => {
+        window.location.reload()
+      }, 3000)
+    }
+    return () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current)
+    }
+  }, [autoRefresh])
+
   return (
     <>
+      <div
+        onClick={() => setAutoRefresh(prev => !prev)}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          background: autoRefresh ? '#4DE88A' : '#f5c542',
+          color: '#000',
+          textAlign: 'center',
+          padding: '6px',
+          fontSize: '13px',
+          fontWeight: 700,
+          cursor: 'pointer',
+        }}
+      >
+        {autoRefresh ? 'רענון אוטומטי פעיל - לחץ לכיבוי' : 'לחץ להפעלת רענון אוטומטי'}
+      </div>
       <Header />
       <Routes>
         <Route path="/" element={<Navigate to="/report" replace />} />

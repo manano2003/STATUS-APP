@@ -142,6 +142,8 @@ interface StoreState {
   getShelterCheckins: (shelterId: string) => ShelterCheckin[]
   getShelterPeopleCount: (shelterId: string) => number
   getUserCheckin: (userId: string) => ShelterCheckin | undefined
+  lastCheckinUserId: string | null
+  removeCheckin: (userId: string) => void
   clearAllCheckins: () => void
   clearShelterCheckins: (shelterId: string) => void
   distressAlerts: DistressAlert[]
@@ -181,7 +183,17 @@ const StoreContext = createContext<StoreState | null>(null)
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [users, setUsers] = useState<User[]>([])
-  const [checkins, setCheckins] = useState<ShelterCheckin[]>([])
+  const [checkins, setCheckinsRaw] = useState<ShelterCheckin[]>(() => {
+    try { return JSON.parse(localStorage.getItem('checkins') || '[]') } catch { return [] }
+  })
+  const setCheckins = useCallback((val: ShelterCheckin[] | ((prev: ShelterCheckin[]) => ShelterCheckin[])) => {
+    setCheckinsRaw(prev => {
+      const next = typeof val === 'function' ? val(prev) : val
+      localStorage.setItem('checkins', JSON.stringify(next))
+      return next
+    })
+  }, [])
+  const [lastCheckinUserId, setLastCheckinUserId] = useState<string | null>(() => localStorage.getItem('lastCheckinUserId'))
   const [roles, setRoles] = useState<string[]>(DEFAULT_ROLES)
   const [distressAlerts, setDistressAlerts] = useState<DistressAlert[]>([])
   const [issueReports, setIssueReports] = useState<ShelterIssueReport[]>([])
@@ -237,6 +249,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addCheckin = useCallback((checkin: ShelterCheckin) => {
+    setLastCheckinUserId(checkin.userId)
+    localStorage.setItem('lastCheckinUserId', checkin.userId)
     // Log to checkin history
     setCheckinHistory(h => [...h, {
       id: Date.now().toString(),
@@ -294,6 +308,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const getUserCheckin = useCallback((userId: string) => {
     return checkins.find(c => c.userId === userId)
   }, [checkins])
+
+  const removeCheckin = useCallback((userId: string) => {
+    setCheckins(prev => prev.filter(c => c.userId !== userId))
+    setLastCheckinUserId(prev => {
+      if (prev === userId) { localStorage.removeItem('lastCheckinUserId'); return null }
+      return prev
+    })
+  }, [])
 
   const clearAllCheckins = useCallback(() => {
     setCheckins([])
@@ -451,7 +473,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       checkins, addCheckin,
       roles, addRole, removeRole,
       getShelterCheckins, getShelterPeopleCount,
-      getUserCheckin, clearAllCheckins, clearShelterCheckins,
+      getUserCheckin, lastCheckinUserId, removeCheckin, clearAllCheckins, clearShelterCheckins,
       distressAlerts, addDistressAlert, deleteDistressAlert, clearAllDistressAlerts,
       issueReports, addIssueReport, removeIssue, getShelterIssues, clearAllIssueReports,
           kindergartenAttendance, setKindergartenAttendance, getKindergartenAttendance,

@@ -5,3 +5,5 @@ android
 ios
 *.local
 .DS_Store
+*.pem
+src/assets/distress/FOURTROOP/
