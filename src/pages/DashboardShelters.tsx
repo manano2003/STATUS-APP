@@ -39,7 +39,7 @@ export default function DashboardShelters() {
         const noMamadPeople = noMamadId ? getShelterPeopleCount(noMamadId) : 0
         return (
           <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
-            <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
+            <div onClick={() => setPopupShelterId('all-shelters')} style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center', cursor: 'pointer' }}>
               <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>נוכחות במקלטים</p>
               <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-success)', margin: 0 }}>{shelterPeople}</p>
             </div>
@@ -55,13 +55,15 @@ export default function DashboardShelters() {
         )
       })()}
 
-      {/* Popup for mamad / no mamad */}
+      {/* Popup for shelters / mamad / no mamad */}
       {popupShelterId && (() => {
-        const checkins = getShelterCheckins(popupShelterId)
+        const isAllShelters = popupShelterId === 'all-shelters'
+        const allShelterCheckins = isAllShelters ? regularShelters.flatMap(s => getShelterCheckins(s.id).map(c => ({ ...c, shelterName: s.name, shelterNumber: s.number }))) : []
+        const checkins = isAllShelters ? [] : getShelterCheckins(popupShelterId)
         const mamadS = specialStatuses.find(s => s.name.includes('ממ"ד בבית'))
         const isMamad = popupShelterId === mamadS?.id
-        const title = isMamad ? 'נוכחות בממ"ד בבית' : 'נוכחות בבית ללא ממ"ד'
-        const color = isMamad ? 'var(--color-accent)' : 'var(--color-danger)'
+        const title = isAllShelters ? 'נוכחות במקלטים' : isMamad ? 'נוכחות בממ"ד בבית' : 'נוכחות בבית ללא ממ"ד'
+        const color = isAllShelters ? 'var(--color-success)' : isMamad ? 'var(--color-accent)' : 'var(--color-danger)'
         return (
           <div
             onClick={() => setPopupShelterId(null)}
@@ -78,13 +80,35 @@ export default function DashboardShelters() {
             }}>
               <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)', textAlign: 'center', position: 'sticky', top: 0, zIndex: 1, background: 'var(--color-bg-card)' }}>
                 <span style={{ fontSize: '17px', fontWeight: 800, color }}>{title}</span>
-                <span style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginRight: '8px' }}>({checkins.length})</span>
+                <span style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginRight: '8px' }}>({isAllShelters ? allShelterCheckins.length : checkins.length})</span>
                 <button onClick={() => setPopupShelterId(null)} style={{
                   position: 'absolute', top: 10, left: 10, background: 'none', border: 'none',
                   color: 'var(--color-text-secondary)', fontSize: '20px', cursor: 'pointer', lineHeight: 1,
                 }}>✕</button>
               </div>
-              {checkins.length === 0 ? (
+              {isAllShelters ? (
+                allShelterCheckins.length === 0 ? (
+                  <p style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '13px' }}>אין נוכחים</p>
+                ) : regularShelters.filter(s => getShelterPeopleCount(s.id) > 0).map(s => {
+                  const sc = getShelterCheckins(s.id)
+                  return (
+                    <div key={s.id}>
+                      <div style={{ padding: '8px 14px', background: 'rgba(77, 232, 138, 0.08)', borderBottom: '1px solid var(--color-border)', fontSize: '13px', fontWeight: 800, color: 'var(--color-success)' }}>
+                        {s.number}. {s.name} ({getShelterPeopleCount(s.id)})
+                      </div>
+                      {sc.map(c => (
+                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', padding: '8px 14px 8px 28px', borderBottom: '1px solid var(--color-border)', fontSize: '12px' }}>
+                          <div style={{ flex: 1 }}>
+                            <span style={{ fontWeight: 600 }}>{c.userName}</span>
+                            <span style={{ color: 'var(--color-text-secondary)', marginRight: '6px', fontSize: '11px' }}>{c.userHouseNumber ? `בית ${c.userHouseNumber}` : ''}</span>
+                          </div>
+                          <span style={{ fontWeight: 700, color: 'var(--color-success)' }}>{c.peopleCount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })
+              ) : checkins.length === 0 ? (
                 <p style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '13px' }}>אין נוכחים</p>
               ) : checkins.map(c => (
                 <div key={c.id} style={{
@@ -104,12 +128,24 @@ export default function DashboardShelters() {
               <div style={{ padding: '12px', borderTop: '1px solid var(--color-border)' }}>
                 <button
                   onClick={() => {
-                    let text = `*${title}*\nסה"כ: ${checkins.reduce((s, c) => s + c.peopleCount, 0)} נפשות\n\n`
-                    text += `שם | טלפון | בית | נפשות\n`
-                    text += `──────────────────\n`
-                    checkins.forEach(c => {
-                      text += `${c.userName} | ${c.userPhone || '—'} | ${c.userHouseNumber || '—'} | ${c.peopleCount}\n`
-                    })
+                    const items = isAllShelters ? allShelterCheckins : checkins
+                    const total = items.reduce((s: number, c: any) => s + c.peopleCount, 0)
+                    let text = `*${title}*\nסה"כ: ${total} נפשות\n\n`
+                    if (isAllShelters) {
+                      regularShelters.filter(s => getShelterPeopleCount(s.id) > 0).forEach(s => {
+                        text += `*${s.number}. ${s.name}: ${getShelterPeopleCount(s.id)} נפשות*\n`
+                        getShelterCheckins(s.id).forEach(c => {
+                          text += `  ${c.userName} | ${c.userPhone || '—'} | בית ${c.userHouseNumber || '—'} | ${c.peopleCount}\n`
+                        })
+                        text += '\n'
+                      })
+                    } else {
+                      text += `שם | טלפון | בית | נפשות\n`
+                      text += `──────────────────\n`
+                      checkins.forEach(c => {
+                        text += `${c.userName} | ${c.userPhone || '—'} | ${c.userHouseNumber || '—'} | ${c.peopleCount}\n`
+                      })
+                    }
                     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
                   }}
                   style={{
