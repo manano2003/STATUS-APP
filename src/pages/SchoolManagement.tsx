@@ -162,7 +162,7 @@ export default function SchoolManagement() {
         })()}
 
         {/* Quick access buttons */}
-        <div style={{ display: 'flex', gap: '10px', marginTop: '24px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '60px', flexWrap: 'wrap' }}>
           <button
             onClick={() => navigate(`/schools/${schoolId}/sources`)}
             style={{
