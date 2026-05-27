@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../data/supabase'
-import { getSchoolsFromCache, loadSchoolClassesFromDB, loadSchoolEmergencyFromDB, loadSchoolUsersFromDB } from '../data/sourceData'
+import { getSchoolsFromCache, loadSchoolClassesFromDB, loadSchoolEmergencyFromDB, loadSchoolUsersFromDB, loadSchoolAttendanceFromDB } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
 interface SchoolClass { name: string; students: string[] }
@@ -21,17 +21,32 @@ export default function SchoolCouncilView() {
   const [classes, setClasses] = useState<SchoolClass[]>([])
   const [emergency, setEmergency] = useState<Record<string, string>>({})
   const [staffUsers, setStaffUsers] = useState<any[]>([])
+  const [attendanceMap, setAttendanceMap] = useState<Record<string, Record<string, boolean>>>({})
   const [expandedClass, setExpandedClass] = useState<string | null>(null)
+
+  const loadAllAttendance = async (sid: string, classList: SchoolClass[]) => {
+    const today = new Date().toISOString().split('T')[0]
+    const map: Record<string, Record<string, boolean>> = {}
+    for (const c of classList) {
+      map[c.name] = await loadSchoolAttendanceFromDB(sid, c.name, today)
+    }
+    setAttendanceMap(map)
+  }
 
   useEffect(() => {
     if (!selectedSchool) return
-    loadSchoolClassesFromDB(selectedSchool).then(setClasses)
+    const init = async () => {
+      const cls = await loadSchoolClassesFromDB(selectedSchool)
+      setClasses(cls)
+      loadAllAttendance(selectedSchool, cls)
+    }
+    init()
     loadSchoolEmergencyFromDB(selectedSchool).then(setEmergency)
     loadSchoolUsersFromDB(selectedSchool).then(setStaffUsers)
 
     const channel = supabase.channel(`council-view-${selectedSchool}`)
       .on('postgres_changes', { event: '*', schema: 'status', table: 'school_attendance', filter: `school_id=eq.${selectedSchool}` }, () => {
-        loadSchoolClassesFromDB(selectedSchool).then(setClasses)
+        loadSchoolClassesFromDB(selectedSchool).then(cls => { setClasses(cls); loadAllAttendance(selectedSchool, cls) })
       })
       .on('postgres_changes', { event: '*', schema: 'status', table: 'school_emergency', filter: `school_id=eq.${selectedSchool}` }, () => {
         loadSchoolEmergencyFromDB(selectedSchool).then(setEmergency)
@@ -44,13 +59,10 @@ export default function SchoolCouncilView() {
   if (selectedSchool) {
     const schoolName = councilSchools.find(s => s.id === selectedSchool)?.name || selectedSchool
     const totalStudents = classes.reduce((sum, c) => sum + c.students.length, 0)
-    const today = new Date().toISOString().split('T')[0]
     let totalPresent = 0
     classes.forEach(c => {
-      try {
-        const att = JSON.parse(localStorage.getItem(`school_attendance_${selectedSchool}_${c.name}_${today}`) || '{}')
-        totalPresent += Object.values(att).filter(v => v === true).length
-      } catch {}
+      const att = attendanceMap[c.name] || {}
+      totalPresent += Object.values(att).filter(v => v === true).length
     })
     const percent = totalStudents > 0 ? Math.round((totalPresent / totalStudents) * 100) : 0
     const hasAnyEmergency = Object.values(emergency).some(s => s === 'protected' || s === 'not_protected')
@@ -94,11 +106,8 @@ export default function SchoolCouncilView() {
               const bgColor = isProtected ? 'rgba(77, 232, 138, 0.1)' : isNotProtected ? 'rgba(232, 77, 77, 0.1)' : noStatus ? 'rgba(255, 255, 255, 0.08)' : (expandedClass === c.name ? 'rgba(77, 166, 232, 0.15)' : 'var(--color-bg-card)')
               const shadow = isProtected ? '0 0 12px rgba(77, 232, 138, 0.4)' : isNotProtected ? '0 0 12px rgba(232, 77, 77, 0.4)' : 'none'
 
-              let present = 0
-              try {
-                const att = JSON.parse(localStorage.getItem(`school_attendance_${selectedSchool}_${c.name}_${today}`) || '{}')
-                present = Object.values(att).filter(v => v === true).length
-              } catch {}
+              const attData = attendanceMap[c.name] || {}
+              const present = Object.values(attData).filter(v => v === true).length
               const hasAttendance = present > 0
               const absent = c.students.length - present
 
@@ -122,8 +131,7 @@ export default function SchoolCouncilView() {
           {expandedClass && (() => {
             const cls = classes.find(c => c.name === expandedClass)
             if (!cls) return null
-            let attendance: Record<string, boolean> = {}
-            try { attendance = JSON.parse(localStorage.getItem(`school_attendance_${selectedSchool}_${cls.name}_${today}`) || '{}') } catch {}
+            const attendance: Record<string, boolean> = attendanceMap[cls.name] || {}
             const teacher = staffUsers.find((u: any) => u.className === cls.name)
             return (
               <div style={{ background: 'rgba(255, 255, 255, 0.06)', borderRadius: 'var(--radius)', border: '2px solid var(--color-accent)', overflow: 'hidden', marginBottom: '16px' }}>
