@@ -31,19 +31,23 @@ export default function DashboardShelters() {
       {/* Stats boxes */}
       {(() => {
         const shelterPeople = regularShelters.reduce((sum, s) => sum + getShelterPeopleCount(s.id), 0)
-        const mamadPeople = getShelterPeopleCount('Oql3xwJNS6liztw23t2C')
-        const noMamadPeople = getShelterPeopleCount('btyaFyyuroj9gEIcBYoz')
+        const mamadShelter = specialStatuses.find(s => s.name.includes('ממ"ד בבית'))
+        const noMamadShelter = specialStatuses.find(s => s.name.includes('ללא ממ"ד'))
+        const mamadId = mamadShelter?.id || ''
+        const noMamadId = noMamadShelter?.id || ''
+        const mamadPeople = mamadId ? getShelterPeopleCount(mamadId) : 0
+        const noMamadPeople = noMamadId ? getShelterPeopleCount(noMamadId) : 0
         return (
           <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
             <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
               <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>נוכחות במקלטים</p>
               <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-success)', margin: 0 }}>{shelterPeople}</p>
             </div>
-            <div onClick={() => setPopupShelterId('Oql3xwJNS6liztw23t2C')} style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center', cursor: 'pointer' }}>
+            <div onClick={() => mamadId && setPopupShelterId(mamadId)} style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center', cursor: 'pointer' }}>
               <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>נוכחות בממ"ד בבית</p>
               <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-accent)', margin: 0 }}>{mamadPeople}</p>
             </div>
-            <div onClick={() => setPopupShelterId('btyaFyyuroj9gEIcBYoz')} style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center', cursor: 'pointer' }}>
+            <div onClick={() => noMamadId && setPopupShelterId(noMamadId)} style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center', cursor: 'pointer' }}>
               <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>נוכחות בבית ללא ממ"ד</p>
               <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-danger)', margin: 0 }}>{noMamadPeople}</p>
             </div>
@@ -54,7 +58,8 @@ export default function DashboardShelters() {
       {/* Popup for mamad / no mamad */}
       {popupShelterId && (() => {
         const checkins = getShelterCheckins(popupShelterId)
-        const isMamad = popupShelterId === 'Oql3xwJNS6liztw23t2C'
+        const mamadS = specialStatuses.find(s => s.name.includes('ממ"ד בבית'))
+        const isMamad = popupShelterId === mamadS?.id
         const title = isMamad ? 'נוכחות בממ"ד בבית' : 'נוכחות בבית ללא ממ"ד'
         const color = isMamad ? 'var(--color-accent)' : 'var(--color-danger)'
         return (
