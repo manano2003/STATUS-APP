@@ -288,7 +288,7 @@ export default function ShelterCheckin() {
                     padding: '14px', background: 'none', border: 'none', borderBottom: '1px solid var(--color-border)',
                     cursor: 'pointer', textAlign: 'right', color: 'var(--color-text)',
                   }}>
-                    <span style={{ fontSize: '24px' }}>🏫</span>
+                    <span style={{ fontSize: '24px' }}>👶</span>
                     <div>
                       <p style={{ fontSize: '14px', fontWeight: 700, margin: 0 }}>{kg.name}</p>
                       <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>{kg.children?.length || 0} ילדים רשומים</p>
