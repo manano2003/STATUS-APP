@@ -113,7 +113,9 @@ export default function SchoolManagement() {
                     present = Object.values(attendance).filter(v => v === true).length
                   } catch {}
                   const hasAttendance = present > 0
+                  const absent = c.students.length - present
                   return (
+                    <>
                     <p style={{
                       fontSize: '13px', fontWeight: 800, margin: 0,
                       color: hasAttendance ? 'var(--color-success)' : 'var(--color-danger)',
@@ -121,7 +123,12 @@ export default function SchoolManagement() {
                     }}>
                       {present} נוכחים
                     </p>
-                  )
+                    {hasAttendance && absent > 0 && (
+                      <p style={{ fontSize: '13px', fontWeight: 800, margin: '4px 0 0', color: 'var(--color-danger)' }}>
+                        -{absent}
+                      </p>
+                    )}
+                    </>
                 })()}
               </button>
             )})}
