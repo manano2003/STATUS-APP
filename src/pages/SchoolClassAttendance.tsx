@@ -69,13 +69,23 @@ export default function SchoolClassAttendance() {
           <span style={{ color: 'var(--color-danger)', fontWeight: 700 }}>{absentCount} חסרים</span>
         </p>
 
+        {/* Save confirmation overlay */}
         {saved && (
           <div style={{
-            background: 'rgba(77, 232, 138, 0.15)', border: '1px solid var(--color-success)',
-            borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center',
-            marginBottom: '16px', fontSize: '14px', fontWeight: 700, color: 'var(--color-success)',
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999,
           }}>
-            הנוכחות נשמרה בהצלחה!
+            <div style={{
+              background: 'var(--color-bg-card)', borderRadius: 'var(--radius)',
+              border: '2px solid var(--color-success)', padding: '32px 40px', textAlign: 'center',
+              boxShadow: '0 0 30px rgba(77, 232, 138, 0.3)',
+            }}>
+              <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>✅</span>
+              <p style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-success)', margin: 0 }}>
+                נוכחות נשמרה
+              </p>
+            </div>
           </div>
         )}
 
