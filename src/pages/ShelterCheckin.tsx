@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getShelterById, getTrafficLight } from '../data/shelters'
 import { useStore } from '../data/store'
+import { getSourceKindergartens, getSourceClubs } from '../data/sourceData'
 import Button from '../components/Button'
 import BackButton from '../components/BackButton'
 
@@ -10,9 +11,11 @@ const MAX_CAPACITY = 50
 export default function ShelterCheckin() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { currentUser, addCheckin, getUserCheckin, getShelterPeopleCount } = useStore()
+  const { currentUser, addCheckin, getUserCheckin, getShelterPeopleCount, getKindergartenAttendance, getClubAttendance } = useStore()
   const [people, setPeople] = useState(1)
   const [submitted, setSubmitted] = useState(false)
+  const [showFrameworkPopup, setShowFrameworkPopup] = useState(false)
+  const [frameworkSubmitted, setFrameworkSubmitted] = useState<{ name: string; count: number } | null>(null)
 
   const shelter = id ? getShelterById(id) : undefined
   const existingCheckin = currentUser ? getUserCheckin(currentUser.id) : undefined
@@ -196,6 +199,141 @@ export default function ShelterCheckin() {
         <Button size="lg" style={{ width: '100%' }} onClick={handleSubmit}>
           דווח כניסה למקלט
         </Button>
+
+        {/* Framework Registration Button (kindergartens/clubs staff) */}
+        {currentUser && (
+          currentUser.roles.includes('גננת') || currentUser.roles.includes('מנהלת גנים') ||
+          currentUser.roles.includes('מועדונים') || currentUser.roles.includes('מנהלת מועדונים') ||
+          currentUser.roles.includes('ADMIN')
+        ) && (
+          <button
+            onClick={() => setShowFrameworkPopup(true)}
+            style={{
+              display: 'block', width: '100%', marginTop: '12px', padding: '14px',
+              background: 'var(--color-success)', color: '#fff', border: 'none',
+              borderRadius: 'var(--radius-sm)', fontSize: '16px', fontWeight: 800,
+              cursor: 'pointer', textAlign: 'center',
+            }}
+          >
+            כניסת מסגרת למקלט
+          </button>
+        )}
+
+        {/* Framework selection popup */}
+        {showFrameworkPopup && (() => {
+          const userRoles = currentUser?.roles || []
+          const isAdmin = userRoles.includes('ADMIN')
+          const showKindergartens = isAdmin || userRoles.includes('גננת') || userRoles.includes('מנהלת גנים')
+          const showClubs = isAdmin || userRoles.includes('מועדונים') || userRoles.includes('מנהלת מועדונים')
+          const kindergartens = showKindergartens ? getSourceKindergartens() : []
+          const clubs = showClubs ? getSourceClubs() : []
+
+          const handleFrameworkSelect = (name: string, type: 'kindergarten' | 'club', id: string) => {
+            const attendance = type === 'kindergarten' ? getKindergartenAttendance(id) : getClubAttendance(id)
+            const presentCount = attendance?.presentChildren?.length || 0
+            if (presentCount === 0) {
+              alert('אין נוכחות רשומה היום במסגרת זו')
+              return
+            }
+            // Register all present children + staff member
+            addCheckin({
+              id: Date.now().toString(),
+              shelterId: shelter.id,
+              userId: currentUser?.id ?? 'anonymous',
+              userName: `${name} — ${currentUser?.fullName || ''}`,
+              userPhone: currentUser?.phone || '',
+              userHouseNumber: '',
+              peopleCount: presentCount + 1,
+              timestamp: Date.now(),
+            })
+            setShowFrameworkPopup(false)
+            setFrameworkSubmitted({ name, count: presentCount })
+          }
+
+          return (
+            <div
+              onClick={() => setShowFrameworkPopup(false)}
+              style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                zIndex: 9999, padding: '20px',
+              }}
+            >
+              <div onClick={e => e.stopPropagation()} style={{
+                background: 'var(--color-bg-card)', borderRadius: 'var(--radius)',
+                border: '2px solid var(--color-success)', overflow: 'hidden',
+                width: '100%', maxWidth: '360px', maxHeight: '70vh', overflowY: 'auto',
+              }}>
+                <div style={{ padding: '14px', borderBottom: '1px solid var(--color-border)', textAlign: 'center', background: 'rgba(77, 232, 138, 0.05)' }}>
+                  <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-success)' }}>בחר מסגרת</span>
+                  <button onClick={() => setShowFrameworkPopup(false)} style={{
+                    position: 'absolute', top: 10, left: 10, background: 'none', border: 'none',
+                    color: 'var(--color-text-secondary)', fontSize: '20px', cursor: 'pointer',
+                  }}>✕</button>
+                </div>
+                {kindergartens.map(kg => (
+                  <button key={kg.id} onClick={() => handleFrameworkSelect(kg.name, 'kindergarten', kg.id)} style={{
+                    display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
+                    padding: '14px', background: 'none', border: 'none', borderBottom: '1px solid var(--color-border)',
+                    cursor: 'pointer', textAlign: 'right', color: 'var(--color-text)',
+                  }}>
+                    <span style={{ fontSize: '24px' }}>🏫</span>
+                    <div>
+                      <p style={{ fontSize: '14px', fontWeight: 700, margin: 0 }}>{kg.name}</p>
+                      <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>{kg.children?.length || 0} ילדים רשומים</p>
+                    </div>
+                  </button>
+                ))}
+                {clubs.map(club => (
+                  <button key={club.id} onClick={() => handleFrameworkSelect(club.name, 'club', club.id)} style={{
+                    display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
+                    padding: '14px', background: 'none', border: 'none', borderBottom: '1px solid var(--color-border)',
+                    cursor: 'pointer', textAlign: 'right', color: 'var(--color-text)',
+                  }}>
+                    <span style={{ fontSize: '24px' }}>⚽</span>
+                    <div>
+                      <p style={{ fontSize: '14px', fontWeight: 700, margin: 0 }}>{club.name}</p>
+                      <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>{club.children?.length || 0} ילדים רשומים</p>
+                    </div>
+                  </button>
+                ))}
+                {kindergartens.length === 0 && clubs.length === 0 && (
+                  <p style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '13px' }}>אין מסגרות רשומות</p>
+                )}
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* Framework submitted success */}
+        {frameworkSubmitted && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999,
+          }}>
+            <div style={{
+              background: 'var(--color-bg-card)', borderRadius: 'var(--radius)',
+              border: '2px solid var(--color-success)', padding: '32px 40px', textAlign: 'center',
+              boxShadow: '0 0 30px rgba(77, 232, 138, 0.3)',
+            }}>
+              <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>✅</span>
+              <p style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-success)', margin: '0 0 8px' }}>
+                {frameworkSubmitted.name}
+              </p>
+              <p style={{ fontSize: '14px', color: '#fff', margin: '0 0 4px' }}>
+                {frameworkSubmitted.count} ילדים + 1 עובד/ת
+              </p>
+              <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', margin: '0 0 16px' }}>
+                נרשמו במקלט {shelter.name}
+              </p>
+              <button onClick={() => setFrameworkSubmitted(null)} style={{
+                background: 'var(--color-success)', color: '#fff', border: 'none',
+                borderRadius: 'var(--radius-sm)', padding: '10px 32px', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+              }}>סגור</button>
+            </div>
+          </div>
+        )}
 
         {/* Guest Registration Button (for shelter managers / חמ"ל / ADMIN only) */}
         {currentUser && (currentUser.roles.includes('מנהל מקלט') || currentUser.roles.includes('חמ"ל') || currentUser.roles.includes('ADMIN')) && (
