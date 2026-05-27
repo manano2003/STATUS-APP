@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
 import { supabase } from '../data/supabase'
-import { loadSchoolClassesFromDB, getSchoolClassesFromCache, loadSchoolEmergencyFromDB, getSchoolEmergencyFromCache, saveSchoolEmergencyToDB, loadSchoolUsersFromDB, getSchoolUsersFromCache } from '../data/sourceData'
+import { loadSchoolClassesFromDB, getSchoolClassesFromCache, loadSchoolEmergencyFromDB, getSchoolEmergencyFromCache, saveSchoolEmergencyToDB, loadSchoolUsersFromDB, getSchoolUsersFromCache, loadSchoolAttendanceFromDB } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
 interface SchoolClass {
@@ -17,19 +17,33 @@ export default function SchoolManagement() {
   const [classes, setClasses] = useState<SchoolClass[]>(() => getSchoolClassesFromCache(schoolId || ''))
   const [emergency, setEmergency] = useState<Record<string, string>>(() => getSchoolEmergencyFromCache(schoolId || ''))
   const [staffUsers, setStaffUsers] = useState<any[]>(() => getSchoolUsersFromCache(schoolId || ''))
+  const [attendanceMap, setAttendanceMap] = useState<Record<string, Record<string, boolean>>>({})
+
+  const loadAllAttendance = async (sid: string, classList: SchoolClass[]) => {
+    const today = new Date().toISOString().split('T')[0]
+    const map: Record<string, Record<string, boolean>> = {}
+    for (const c of classList) {
+      map[c.name] = await loadSchoolAttendanceFromDB(sid, c.name, today)
+    }
+    setAttendanceMap(map)
+  }
 
   useEffect(() => {
     if (!schoolId) return
-    const refresh = () => {
-      loadSchoolClassesFromDB(schoolId).then(setClasses)
+    const refresh = async () => {
+      const cls = await loadSchoolClassesFromDB(schoolId)
+      setClasses(cls)
       loadSchoolEmergencyFromDB(schoolId).then(setEmergency)
       loadSchoolUsersFromDB(schoolId).then(setStaffUsers)
+      loadAllAttendance(schoolId, cls)
     }
     refresh()
 
     // Realtime subscription - instant updates from any device
     const channel = supabase.channel(`school-${schoolId}`)
-      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_attendance', filter: `school_id=eq.${schoolId}` }, () => refresh())
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_attendance', filter: `school_id=eq.${schoolId}` }, () => {
+        loadSchoolClassesFromDB(schoolId).then(cls => { setClasses(cls); loadAllAttendance(schoolId, cls) })
+      })
       .on('postgres_changes', { event: '*', schema: 'status', table: 'school_emergency', filter: `school_id=eq.${schoolId}` }, () => refresh())
       .on('postgres_changes', { event: '*', schema: 'status', table: 'school_classes', filter: `school_id=eq.${schoolId}` }, () => refresh())
       .subscribe()
@@ -50,13 +64,10 @@ export default function SchoolManagement() {
 
         {/* Stats boxes */}
         {(() => {
-          const today = new Date().toISOString().split('T')[0]
           let totalPresent = 0
           classes.forEach(c => {
-            try {
-              const attendance = JSON.parse(localStorage.getItem(`school_attendance_${schoolId}_${c.name}_${today}`) || '{}')
-              totalPresent += Object.values(attendance).filter(v => v === true).length
-            } catch {}
+            const att = attendanceMap[c.name] || {}
+            totalPresent += Object.values(att).filter(v => v === true).length
           })
           const percent = totalStudents > 0 ? Math.round((totalPresent / totalStudents) * 100) : 0
           return (
@@ -124,11 +135,8 @@ export default function SchoolManagement() {
                   {c.students.length} תלמידים
                 </p>
                 {(() => {
-                  let present = 0
-                  try {
-                    const attendance = JSON.parse(localStorage.getItem(`school_attendance_${schoolId}_${c.name}_${new Date().toISOString().split('T')[0]}`) || '{}')
-                    present = Object.values(attendance).filter(v => v === true).length
-                  } catch {}
+                  const att = attendanceMap[c.name] || {}
+                  const present = Object.values(att).filter(v => v === true).length
                   const hasAttendance = present > 0
                   const absent = c.students.length - present
                   return (
@@ -176,9 +184,7 @@ export default function SchoolManagement() {
                 </span>
               </div>
               {(() => {
-                const today = new Date().toISOString().split('T')[0]
-                let attendance: Record<string, boolean> = {}
-                try { attendance = JSON.parse(localStorage.getItem(`school_attendance_${schoolId}_${cls.name}_${today}`) || '{}') } catch {}
+                const attendance: Record<string, boolean> = attendanceMap[cls.name] || {}
                 const teacher = staffUsers.find((u: any) => u.className === cls.name)
                 return (<>
                 {teacher && (
