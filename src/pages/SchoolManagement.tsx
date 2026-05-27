@@ -126,14 +126,28 @@ export default function SchoolManagement() {
                   כיתה {cls.name} ({cls.students.length})
                 </span>
               </div>
-              {cls.students.map(student => (
-                <div key={student} style={{
-                  display: 'flex', alignItems: 'center', padding: '10px 14px',
-                  borderBottom: '1px solid var(--color-border)', fontSize: '13px',
-                }}>
-                  <span style={{ flex: 1 }}>{student}</span>
-                </div>
-              ))}
+              {(() => {
+                const today = new Date().toISOString().split('T')[0]
+                let attendance: Record<string, boolean> = {}
+                try { attendance = JSON.parse(localStorage.getItem(`school_attendance_${schoolId}_${cls.name}_${today}`) || '{}') } catch {}
+                return cls.students.map(student => {
+                  const status = attendance[student]
+                  return (
+                    <div key={student} style={{
+                      display: 'flex', alignItems: 'center', padding: '10px 14px',
+                      borderBottom: '1px solid var(--color-border)', fontSize: '13px',
+                    }}>
+                      <span style={{ flex: 1 }}>{student}</span>
+                      {status === true && (
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-success)' }}>נוכח</span>
+                      )}
+                      {status === false && (
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-danger)' }}>לא נוכח</span>
+                      )}
+                    </div>
+                  )
+                })
+              })()}
             </div>
           )
         })()}
