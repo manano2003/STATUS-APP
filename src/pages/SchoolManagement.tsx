@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { loadSchoolClassesFromDB, getSchoolClassesFromCache, loadSchoolEmergencyFromDB, getSchoolEmergencyFromCache } from '../data/sourceData'
+import { useStore } from '../data/store'
+import { loadSchoolClassesFromDB, getSchoolClassesFromCache, loadSchoolEmergencyFromDB, getSchoolEmergencyFromCache, saveSchoolEmergencyToDB } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
 interface SchoolClass {
@@ -11,6 +12,7 @@ interface SchoolClass {
 export default function SchoolManagement() {
   const { schoolId } = useParams<{ schoolId: string }>()
   const navigate = useNavigate()
+  const { currentUser } = useStore()
   const [classes, setClasses] = useState<SchoolClass[]>(() => getSchoolClassesFromCache(schoolId || ''))
   const [emergency, setEmergency] = useState<Record<string, string>>(() => getSchoolEmergencyFromCache(schoolId || ''))
 
@@ -173,8 +175,38 @@ export default function SchoolManagement() {
           )
         })()}
 
+        {/* End emergency button */}
+        {(() => {
+          const hasEmergency = Object.values(emergency).some(s => s === 'protected' || s === 'not_protected')
+          return (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
+              <button
+                onClick={async () => {
+                  if (!schoolId || !hasEmergency) return
+                  for (const c of classes) {
+                    await saveSchoolEmergencyToDB(schoolId, c.name, 'none', currentUser?.id || '')
+                  }
+                  setEmergency({})
+                }}
+                style={{
+                  background: hasEmergency ? 'var(--color-danger)' : 'transparent',
+                  color: hasEmergency ? '#fff' : 'var(--color-text-secondary)',
+                  border: `1px solid ${hasEmergency ? 'var(--color-danger)' : 'var(--color-border)'}`,
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '10px 28px',
+                  fontSize: '14px', fontWeight: 700,
+                  cursor: hasEmergency ? 'pointer' : 'default',
+                  opacity: hasEmergency ? 1 : 0.6,
+                }}
+              >
+                גמר אירוע חירום
+              </button>
+            </div>
+          )
+        })()}
+
         {/* Quick access buttons */}
-        <div style={{ display: 'flex', gap: '10px', marginTop: '60px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '30px', flexWrap: 'wrap' }}>
           <button
             onClick={() => navigate(`/schools/${schoolId}/sources`)}
             style={{
