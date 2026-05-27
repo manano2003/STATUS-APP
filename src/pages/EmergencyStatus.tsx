@@ -65,8 +65,8 @@ export default function EmergencyStatus() {
             key={t.key}
             onClick={() => { setFilterStatus(filterStatus === t.key ? null : t.key); setPage(0) }}
             style={{
-              flex: 1, padding: '8px 4px', borderRadius: 'var(--radius-sm)', fontSize: '10px', fontWeight: 700,
-              whiteSpace: 'nowrap', cursor: 'pointer', textAlign: 'center',
+              flex: 1, padding: '12px 4px', borderRadius: 'var(--radius-sm)', fontSize: '10px', fontWeight: 700,
+              whiteSpace: 'nowrap', cursor: 'pointer', textAlign: 'center', minHeight: '60px',
               border: filterStatus === t.key ? '2px solid ' + t.color : '1px solid ' + t.color + '40',
               background: t.color + '15',
               color: t.color,
