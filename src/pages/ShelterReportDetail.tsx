@@ -110,12 +110,10 @@ export default function ShelterReportDetail() {
         onClick={() => {
           let text = `*${shelter.name} — מקלט ${shelter.number}*\n`
           text += `סה"כ: ${count} נפשות\n\n`
-          checkins.forEach((c, i) => {
-            text += `*${i + 1}.*\n`
-            text += `שם: ${c.userName}\n`
-            text += `טלפון: ${c.userPhone || '—'}\n`
-            text += `בית: ${c.userHouseNumber || '—'}\n`
-            text += `נפשות: ${c.peopleCount}\n\n`
+          text += `שם | טלפון | בית | נפשות\n`
+          text += `──────────────────\n`
+          checkins.forEach(c => {
+            text += `${c.userName} | ${c.userPhone || '—'} | ${c.userHouseNumber || '—'} | ${c.peopleCount}\n`
           })
           const msg = encodeURIComponent(text)
           window.open(`https://wa.me/?text=${msg}`, '_blank')
