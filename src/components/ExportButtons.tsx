@@ -72,18 +72,24 @@ export default function ExportButtons({ title, getText, getTableData }: ExportBu
               border: '1px solid var(--color-border)', background: 'var(--color-bg-card)',
               color: 'var(--color-accent)', fontSize: '14px', fontWeight: 700,
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              fontFamily: 'var(--font-family)',
             }}
           >
             <span style={{ fontSize: '18px' }}>📧</span>
             שלח למייל
           </button>
           <button
-            onClick={() => setShowOptions('whatsapp')}
+            onClick={() => {
+              const text = getText()
+              const msg = encodeURIComponent(`*${title}*\n\n${text}`)
+              window.open(`https://wa.me/?text=${msg}`, '_blank')
+            }}
             style={{
               flex: 1, padding: '14px', borderRadius: 'var(--radius)',
               border: '1px solid var(--color-success)', background: 'rgba(77, 232, 138, 0.08)',
               color: 'var(--color-success)', fontSize: '14px', fontWeight: 700,
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              fontFamily: 'var(--font-family)',
             }}
           >
             <span style={{ fontSize: '18px' }}>💬</span>
