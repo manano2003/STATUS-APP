@@ -77,6 +77,25 @@ export default function SchoolsList() {
 
   return (
     <PageLayout title="בתי ספר" subtitle={councilName} backTo="/schools/councils">
+      {/* Permissions button */}
+      <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '16px' }}>
+        <button
+          onClick={() => navigate(`/schools/council/${councilId}/permissions`)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            background: 'rgba(77, 166, 232, 0.1)',
+            border: '1px solid var(--color-accent)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '8px 16px',
+            fontSize: '13px', fontWeight: 700,
+            color: 'var(--color-accent)',
+            cursor: 'pointer',
+          }}
+        >
+          🔒 הרשאות מועצה
+        </button>
+      </div>
+
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -161,25 +180,6 @@ export default function SchoolsList() {
             >{copiedId === school.id ? 'הלינק הועתק!' : 'העתק לינק'}</button>
           </div>
         ))}
-      </div>
-
-      {/* Permissions button */}
-      <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '20px', marginBottom: '20px' }}>
-        <button
-          onClick={() => navigate(`/schools/council/${councilId}/permissions`)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '6px',
-            background: 'rgba(77, 166, 232, 0.1)',
-            border: '1px solid var(--color-accent)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '8px 16px',
-            fontSize: '13px', fontWeight: 700,
-            color: 'var(--color-accent)',
-            cursor: 'pointer',
-          }}
-        >
-          🔒 הרשאות מועצה
-        </button>
       </div>
 
       {!showAdd ? (
