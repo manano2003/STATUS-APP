@@ -20,6 +20,7 @@ function loadSchoolLogos(): Record<string, string> {
 export default function SchoolCouncilView() {
   const [allSchools, setAllSchools] = useState<SchoolRecord[]>([])
   const [selectedCouncil, setSelectedCouncil] = useState<string | null>(null)
+  const [councilStats, setCouncilStats] = useState<{ totalStudents: number; totalPresent: number; totalAbsent: number }>({ totalStudents: 0, totalPresent: 0, totalAbsent: 0 })
   const councilLogos = loadCouncilLogos()
   const schoolLogos = loadSchoolLogos()
   const [selectedSchool, setSelectedSchool] = useState<string | null>(null)
@@ -32,6 +33,35 @@ export default function SchoolCouncilView() {
   useEffect(() => {
     loadSchoolsFromDB().then(setAllSchools)
   }, [])
+
+  // Load council-level stats
+  useEffect(() => {
+    if (!selectedCouncil) return
+    const schools = allSchools.filter(s => s.councilId === selectedCouncil)
+    const today = new Date().toISOString().split('T')[0]
+    const loadStats = async () => {
+      let totalStudents = 0, totalPresent = 0, totalAbsent = 0
+      for (const school of schools) {
+        const cls = await loadSchoolClassesFromDB(school.id)
+        for (const c of cls) {
+          totalStudents += c.students.length
+          const att = await loadSchoolAttendanceFromDB(school.id, c.name, today)
+          const present = Object.values(att).filter(v => v === true).length
+          const absent = Object.values(att).filter(v => v === false).length
+          totalPresent += present
+          totalAbsent += absent
+        }
+      }
+      setCouncilStats({ totalStudents, totalPresent, totalAbsent })
+    }
+    loadStats()
+
+    // Realtime refresh
+    const channel = supabase.channel(`council-stats-${selectedCouncil}`)
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_attendance' }, () => loadStats())
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [selectedCouncil, allSchools])
 
   const loadAllAttendance = async (sid: string, classList: SchoolClass[]) => {
     const today = new Date().toISOString().split('T')[0]
@@ -186,6 +216,22 @@ export default function SchoolCouncilView() {
               cursor: 'pointer', fontSize: '13px', fontWeight: 700, padding: '8px 16px',
             }}>חזרה למועצות</button>
           </div>
+          {/* Council stats */}
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center' }}>
+              <p style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-accent)', margin: '0 0 4px' }}>{schools.length}</p>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>מוסדות חינוך</p>
+            </div>
+            <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
+              <p style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: '0 0 2px' }}>{councilStats.totalStudents}</p>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 4px' }}>תלמידים רשומים</p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-success)' }}>{councilStats.totalPresent} ✓</span>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-danger)' }}>{councilStats.totalAbsent} ✕</span>
+              </div>
+            </div>
+          </div>
+
           <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', textAlign: 'center', marginBottom: '16px' }}>
             בתי ספר במועצה
           </p>
