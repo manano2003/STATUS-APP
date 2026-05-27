@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../data/store'
 import { supabase } from '../data/supabase'
-import { loadSchoolClassesFromDB, getSchoolClassesFromCache, getSchoolUsersFromCache } from '../data/sourceData'
+import { loadSchoolClassesFromDB, getSchoolClassesFromCache, getSchoolUsersFromCache, getSchoolEmergencyFromCache, loadSchoolEmergencyFromDB } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
 interface SchoolClass {
@@ -17,13 +17,18 @@ export default function SchoolClasses() {
   const [searchParams] = useSearchParams()
   const [classes, setClasses] = useState<SchoolClass[]>(() => getSchoolClassesFromCache(schoolId || ''))
   const [selectedClass, setSelectedClass] = useState<string | null>(searchParams.get('selected') ? decodeURIComponent(searchParams.get('selected')!) : null)
+  const [emergency, setEmergency] = useState<Record<string, string>>(() => getSchoolEmergencyFromCache(schoolId || ''))
 
   useEffect(() => {
     if (!schoolId) return
     loadSchoolClassesFromDB(schoolId).then(setClasses)
+    loadSchoolEmergencyFromDB(schoolId).then(setEmergency)
     const channel = supabase.channel(`classes-${schoolId}`)
       .on('postgres_changes', { event: '*', schema: 'status', table: 'school_classes', filter: `school_id=eq.${schoolId}` }, () => {
         loadSchoolClassesFromDB(schoolId).then(setClasses)
+      })
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_emergency', filter: `school_id=eq.${schoolId}` }, () => {
+        loadSchoolEmergencyFromDB(schoolId).then(setEmergency)
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -112,6 +117,16 @@ export default function SchoolClasses() {
               <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-danger)' }}>חירום</span>
             </button>
           </div>
+          {emergency[cls.name] === 'protected' && (
+            <div style={{ marginTop: '24px', background: 'rgba(77, 232, 138, 0.1)', border: '1px solid var(--color-success)', borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center' }}>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-success)', margin: 0, lineHeight: 1.8 }}>יש להישאר במרחב המוגן עד קבלת הודעה מפיקוד העורף</p>
+            </div>
+          )}
+          {emergency[cls.name] === 'not_protected' && (
+            <div style={{ marginTop: '24px', background: 'rgba(232, 77, 77, 0.1)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center' }}>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-danger)', margin: 0, lineHeight: 1.8 }}>יש להיכנס למרחב מוגן במיידי ולהישאר עד הודעה מפיקוד העורף</p>
+            </div>
+          )}
         </>
       } />
     )
@@ -165,6 +180,16 @@ export default function SchoolClasses() {
               <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-danger)' }}>חירום</span>
             </button>
           </div>
+          {emergency[cls.name] === 'protected' && (
+            <div style={{ marginTop: '24px', background: 'rgba(77, 232, 138, 0.1)', border: '1px solid var(--color-success)', borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center' }}>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-success)', margin: 0, lineHeight: 1.8 }}>יש להישאר במרחב המוגן עד קבלת הודעה מפיקוד העורף</p>
+            </div>
+          )}
+          {emergency[cls.name] === 'not_protected' && (
+            <div style={{ marginTop: '24px', background: 'rgba(232, 77, 77, 0.1)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center' }}>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-danger)', margin: 0, lineHeight: 1.8 }}>יש להיכנס למרחב מוגן במיידי ולהישאר עד הודעה מפיקוד העורף</p>
+            </div>
+          )}
         </>
       } />
     )
