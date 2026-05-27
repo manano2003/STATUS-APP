@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { loadSchoolClassesFromDB, getSchoolClassesFromCache } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
 interface SchoolClass {
@@ -7,14 +8,14 @@ interface SchoolClass {
   students: string[]
 }
 
-function loadClasses(schoolId: string): SchoolClass[] {
-  try { return JSON.parse(localStorage.getItem('school_classes_' + schoolId) || '[]') } catch { return [] }
-}
-
 export default function SchoolManagement() {
   const { schoolId } = useParams<{ schoolId: string }>()
   const navigate = useNavigate()
-  const [classes] = useState<SchoolClass[]>(() => loadClasses(schoolId || ''))
+  const [classes, setClasses] = useState<SchoolClass[]>(() => getSchoolClassesFromCache(schoolId || ''))
+
+  useEffect(() => {
+    if (schoolId) loadSchoolClassesFromDB(schoolId).then(setClasses)
+  }, [schoolId])
   const [expandedClass, setExpandedClass] = useState<string | null>(null)
 
   const totalStudents = classes.reduce((sum, c) => sum + c.students.length, 0)
