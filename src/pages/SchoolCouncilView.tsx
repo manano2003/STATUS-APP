@@ -219,13 +219,13 @@ export default function SchoolCouncilView() {
           {/* Council stats */}
           <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
             <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center' }}>
-              <p style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-accent)', margin: '0 0 4px' }}>{schools.length}</p>
-              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>מוסדות חינוך</p>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 8px' }}>מוסדות חינוך</p>
+              <p style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-accent)', margin: 0 }}>{schools.length}</p>
             </div>
             <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
-              <p style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: '0 0 2px' }}>{councilStats.totalStudents}</p>
-              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>תלמידים רשומים</p>
-              <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: '0 0 2px' }}>נוכחים / לא נוכחים</p>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 8px' }}>תלמידים רשומים</p>
+              <p style={{ fontSize: '28px', fontWeight: 800, color: '#fff', margin: '0 0 8px' }}>{councilStats.totalStudents}</p>
+              <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: '0 0 4px' }}>נוכחים / לא נוכחים</p>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-success)' }}>{councilStats.totalPresent}</span>
                 <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-text-secondary)' }}>/</span>
