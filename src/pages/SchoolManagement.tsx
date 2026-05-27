@@ -85,13 +85,13 @@ export default function SchoolManagement() {
                   transition: 'all 0.2s ease',
                 }}
               >
-                <p style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-accent)', margin: '0 0 4px', textShadow: '0 0 8px rgba(77, 166, 232, 0.6)' }}>
+                <p style={{ fontSize: '16px', fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>
                   {c.name}
                 </p>
                 <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 4px' }}>
                   {c.students.length} תלמידים
                 </p>
-                <p style={{ fontSize: '13px', fontWeight: 800, color: '#fff', margin: 0 }}>
+                <p style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-accent)', margin: 0, textShadow: '0 0 8px rgba(77, 166, 232, 0.6)' }}>
                   {(() => {
                     try {
                       const attendance = JSON.parse(localStorage.getItem(`school_attendance_${schoolId}_${c.name}_${new Date().toISOString().split('T')[0]}`) || '{}')
