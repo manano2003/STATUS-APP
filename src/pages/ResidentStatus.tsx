@@ -8,7 +8,7 @@ const statuses: { type: EmergencyStatusType; icon: string }[] = [
   { type: 'located-healthy', icon: '✅' },
   { type: 'located-evacuated', icon: '🚑' },
   { type: 'missing', icon: '❓' },
-  { type: 'harduf', icon: '🏠' },
+  { type: 'harduf', icon: '🕯️' },
 ]
 
 export default function ResidentStatus() {
