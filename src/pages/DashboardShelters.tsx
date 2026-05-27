@@ -297,12 +297,12 @@ export default function DashboardShelters() {
           text += `--- מקלטים ---\n`
           regularShelters.forEach(s => {
             const c = getShelterPeopleCount(s.id)
-            text += `${s.name} (מקלט ${s.number}): ${c} נפשות\n`
+            text += `${s.number}. ${s.name}: ${c} נפשות\n`
           })
           text += `\n--- סטטוס אישי ---\n`
           specialStatuses.forEach(s => {
             const c = getShelterPeopleCount(s.id)
-            text += `${s.name}: ${c} נפשות\n`
+            text += `${s.number}. ${s.name}: ${c} נפשות\n`
           })
           return text
         }}
