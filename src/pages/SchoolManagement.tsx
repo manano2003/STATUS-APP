@@ -175,7 +175,7 @@ export default function SchoolManagement() {
             <p style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-accent)', margin: '4px 0 0' }}>טבלאות מקור</p>
           </button>
           <button
-            onClick={() => alert('אזור בבניה')}
+            onClick={() => navigate(`/schools/${schoolId}/history`)}
             style={{
               flex: 1, minWidth: '80px', padding: '14px', background: 'var(--color-bg-card)',
               border: '1px solid var(--color-border)', borderRadius: 'var(--radius)',
