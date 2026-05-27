@@ -49,7 +49,7 @@ export default function SchoolHome({ content, backTo }: { content?: React.ReactN
       return councilUsers.some((u: any) => u.phone === currentUser?.phone || u.email === currentUser?.email)
     } catch { return false }
   })()
-  const showCouncilTab = isAdmin || isCouncilWorker || true // TODO: temp show for all
+  const showCouncilTab = isAdmin || isCouncilWorker
 
   const tabs = [
     { id: 'classes', label: 'כיתות', icon: '📚', path: `/schools/${schoolId}/classes` },
