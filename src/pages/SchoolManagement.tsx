@@ -210,32 +210,62 @@ export default function SchoolManagement() {
           )
         })()}
 
-        {/* End emergency button */}
+        {/* Emergency status bar */}
         {(() => {
-          const hasEmergency = Object.values(emergency).some(s => s === 'protected' || s === 'not_protected')
+          const protectedCount = Object.values(emergency).filter(s => s === 'protected').length
+          const notProtectedCount = Object.values(emergency).filter(s => s === 'not_protected').length
+          const noStatusCount = classes.length - protectedCount - notProtectedCount
+          const hasEmergency = protectedCount > 0 || notProtectedCount > 0
           return (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
-              <button
-                onClick={async () => {
-                  if (!schoolId || !hasEmergency) return
-                  for (const c of classes) {
-                    await saveSchoolEmergencyToDB(schoolId, c.name, 'none', currentUser?.id || '')
-                  }
-                  setEmergency({})
-                }}
-                style={{
-                  background: hasEmergency ? 'var(--color-danger)' : 'transparent',
-                  color: hasEmergency ? '#fff' : 'var(--color-text-secondary)',
-                  border: `1px solid ${hasEmergency ? 'var(--color-danger)' : 'var(--color-border)'}`,
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '10px 28px',
-                  fontSize: '14px', fontWeight: 700,
-                  cursor: hasEmergency ? 'pointer' : 'default',
-                  opacity: hasEmergency ? 1 : 0.6,
-                }}
-              >
-                גמר אירוע חירום
-              </button>
+            <div style={{ marginTop: '30px' }}>
+              {hasEmergency && (
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '12px' }}>
+                  <div style={{
+                    background: 'rgba(77, 232, 138, 0.15)', border: '1px solid var(--color-success)',
+                    borderRadius: 'var(--radius-sm)', padding: '8px 16px', textAlign: 'center',
+                  }}>
+                    <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-success)' }}>{protectedCount}</span>
+                    <p style={{ fontSize: '10px', color: 'var(--color-success)', margin: '2px 0 0', fontWeight: 700 }}>מוגנים</p>
+                  </div>
+                  <div style={{
+                    background: 'rgba(232, 77, 77, 0.15)', border: '1px solid var(--color-danger)',
+                    borderRadius: 'var(--radius-sm)', padding: '8px 16px', textAlign: 'center',
+                  }}>
+                    <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-danger)' }}>{notProtectedCount}</span>
+                    <p style={{ fontSize: '10px', color: 'var(--color-danger)', margin: '2px 0 0', fontWeight: 700 }}>לא מוגנים</p>
+                  </div>
+                  <div style={{
+                    background: 'transparent', border: '1px solid #fff',
+                    borderRadius: 'var(--radius-sm)', padding: '8px 16px', textAlign: 'center',
+                  }}>
+                    <span style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>{noStatusCount}</span>
+                    <p style={{ fontSize: '10px', color: 'var(--color-text-secondary)', margin: '2px 0 0', fontWeight: 700 }}>ללא סימון</p>
+                  </div>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <button
+                  onClick={async () => {
+                    if (!schoolId || !hasEmergency) return
+                    for (const c of classes) {
+                      await saveSchoolEmergencyToDB(schoolId, c.name, 'none', currentUser?.id || '')
+                    }
+                    setEmergency({})
+                  }}
+                  style={{
+                    background: hasEmergency ? 'var(--color-danger)' : 'transparent',
+                    color: hasEmergency ? '#fff' : 'var(--color-text-secondary)',
+                    border: `1px solid ${hasEmergency ? 'var(--color-danger)' : 'var(--color-border)'}`,
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '10px 28px',
+                    fontSize: '14px', fontWeight: 700,
+                    cursor: hasEmergency ? 'pointer' : 'default',
+                    opacity: hasEmergency ? 1 : 0.6,
+                  }}
+                >
+                  גמר אירוע חירום
+                </button>
+              </div>
             </div>
           )
         })()}
