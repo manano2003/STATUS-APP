@@ -166,27 +166,38 @@ export default function SchoolManagement() {
           </p>
         )}
 
-        {/* Expanded class - student list */}
+        {/* Popup class student list */}
         {expandedClass && (() => {
           const cls = classes.find(c => c.name === expandedClass)
           if (!cls) return null
+          const attendance: Record<string, boolean> = attendanceMap[cls.name] || {}
+          const teacher = staffUsers.find((u: any) => u.className === cls.name)
           return (
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.06)',
-              borderRadius: 'var(--radius)',
-              border: '2px solid var(--color-accent)',
-              overflow: 'hidden',
-              marginBottom: '16px',
-            }}>
-              <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)', background: 'rgba(77, 166, 232, 0.05)', textAlign: 'center' }}>
-                <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--color-accent)' }}>
-                  כיתה {cls.name} ({cls.students.length})
-                </span>
-              </div>
-              {(() => {
-                const attendance: Record<string, boolean> = attendanceMap[cls.name] || {}
-                const teacher = staffUsers.find((u: any) => u.className === cls.name)
-                return (<>
+            <div
+              onClick={() => setExpandedClass(null)}
+              style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                zIndex: 9999, padding: '20px',
+              }}
+            >
+              <div
+                onClick={e => e.stopPropagation()}
+                style={{
+                  background: 'var(--color-bg-card)', borderRadius: 'var(--radius)',
+                  border: '2px solid var(--color-accent)', overflow: 'hidden',
+                  width: '100%', maxWidth: '400px', maxHeight: '80vh', overflowY: 'auto',
+                }}
+              >
+                <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)', background: 'rgba(77, 166, 232, 0.05)', textAlign: 'center', position: 'sticky', top: 0, zIndex: 1 }}>
+                  <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--color-accent)' }}>
+                    כיתה {cls.name} ({cls.students.length})
+                  </span>
+                  <button onClick={() => setExpandedClass(null)} style={{
+                    position: 'absolute', top: 10, left: 10, background: 'none', border: 'none',
+                    color: 'var(--color-text-secondary)', fontSize: '20px', cursor: 'pointer', lineHeight: 1,
+                  }}>✕</button>
+                </div>
                 {teacher && (
                   <div style={{
                     display: 'flex', alignItems: 'center', padding: '10px 14px',
@@ -214,8 +225,7 @@ export default function SchoolManagement() {
                     </div>
                   )
                 })}
-                </>)
-              })()}
+              </div>
             </div>
           )
         })()}
