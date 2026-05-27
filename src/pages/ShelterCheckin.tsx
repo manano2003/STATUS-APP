@@ -16,6 +16,7 @@ export default function ShelterCheckin() {
   const [submitted, setSubmitted] = useState(false)
   const [showFrameworkPopup, setShowFrameworkPopup] = useState(false)
   const [frameworkSubmitted, setFrameworkSubmitted] = useState<{ name: string; count: number } | null>(null)
+  const [checklistData, setChecklistData] = useState<{ name: string; type: 'kindergarten' | 'club'; id: string; children: string[]; checked: Record<string, boolean> } | null>(null)
 
   const shelter = id ? getShelterById(id) : undefined
   const existingCheckin = currentUser ? getUserCheckin(currentUser.id) : undefined
@@ -232,7 +233,17 @@ export default function ShelterCheckin() {
             const attendance = type === 'kindergarten' ? getKindergartenAttendance(id) : getClubAttendance(id)
             const presentCount = attendance?.presentChildren?.length || 0
             if (presentCount === 0) {
-              alert('אין נוכחות רשומה היום במסגרת זו')
+              // No attendance today - open checklist for the user to mark
+              const source = type === 'kindergarten' ? kindergartens.find(k => k.id === id) : clubs.find(c => c.id === id)
+              const children = source?.children || []
+              if (children.length === 0) {
+                alert('אין ילדים רשומים במסגרת זו')
+                return
+              }
+              const defaultChecked: Record<string, boolean> = {}
+              children.forEach(c => { defaultChecked[c] = true })
+              setChecklistData({ name, type, id, children, checked: defaultChecked })
+              setShowFrameworkPopup(false)
               return
             }
             // Register all present children + staff member
@@ -331,6 +342,99 @@ export default function ShelterCheckin() {
                 background: 'var(--color-success)', color: '#fff', border: 'none',
                 borderRadius: 'var(--radius-sm)', padding: '10px 32px', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
               }}>סגור</button>
+            </div>
+          </div>
+        )}
+
+        {/* Checklist popup for frameworks without attendance */}
+        {checklistData && (
+          <div
+            onClick={() => setChecklistData(null)}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 9999, padding: '20px',
+            }}
+          >
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--color-bg-card)', borderRadius: 'var(--radius)',
+              border: '2px solid var(--color-success)', overflow: 'hidden',
+              width: '100%', maxWidth: '380px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+            }}>
+              <div style={{ padding: '14px', borderBottom: '1px solid var(--color-border)', textAlign: 'center', background: 'rgba(77, 232, 138, 0.05)' }}>
+                <p style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-success)', margin: '0 0 4px' }}>
+                  נוכחות — {checklistData.name}
+                </p>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>
+                  סמני את הנוכחים ולחצי אישור
+                </p>
+              </div>
+              <div style={{ overflowY: 'auto', flex: 1 }}>
+                {checklistData.children.map(child => {
+                  const isChecked = checklistData.checked[child] !== false
+                  return (
+                    <div
+                      key={child}
+                      onClick={() => setChecklistData(prev => prev ? {
+                        ...prev, checked: { ...prev.checked, [child]: !prev.checked[child] }
+                      } : null)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '12px',
+                        padding: '12px 14px', borderBottom: '1px solid var(--color-border)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <div style={{
+                        width: '26px', height: '26px', borderRadius: '6px',
+                        border: isChecked ? 'none' : '2px solid var(--color-danger)',
+                        background: isChecked ? 'var(--color-success)' : 'transparent',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      }}>
+                        {isChecked && <span style={{ color: '#fff', fontSize: '14px', fontWeight: 800 }}>✓</span>}
+                        {!isChecked && <span style={{ color: 'var(--color-danger)', fontSize: '12px', fontWeight: 800 }}>✕</span>}
+                      </div>
+                      <span style={{
+                        fontSize: '14px', fontWeight: 600,
+                        color: isChecked ? 'var(--color-text)' : 'var(--color-danger)',
+                        textDecoration: isChecked ? 'none' : 'line-through',
+                      }}>{child}</span>
+                    </div>
+                  )
+                })}
+              </div>
+              <div style={{ padding: '14px', borderTop: '1px solid var(--color-border)', display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                <button
+                  onClick={() => {
+                    const presentChildren = checklistData.children.filter(c => checklistData.checked[c] !== false)
+                    if (presentChildren.length === 0) {
+                      alert('לא סומנו נוכחים')
+                      return
+                    }
+                    addCheckin({
+                      id: Date.now().toString(),
+                      shelterId: shelter.id,
+                      userId: currentUser?.id ?? 'anonymous',
+                      userName: `${checklistData.name} — ${currentUser?.fullName || ''}`,
+                      userPhone: currentUser?.phone || '',
+                      userHouseNumber: '',
+                      peopleCount: presentChildren.length + 1,
+                      timestamp: Date.now(),
+                    })
+                    setChecklistData(null)
+                    setFrameworkSubmitted({ name: checklistData.name, count: presentChildren.length })
+                  }}
+                  style={{
+                    background: 'var(--color-success)', color: '#fff', border: 'none',
+                    borderRadius: 'var(--radius-sm)', padding: '12px 32px', fontSize: '15px', fontWeight: 800, cursor: 'pointer',
+                  }}
+                >
+                  אישור ורישום במקלט
+                </button>
+                <button onClick={() => setChecklistData(null)} style={{
+                  background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-sm)', padding: '12px 20px', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+                }}>ביטול</button>
+              </div>
             </div>
           </div>
         )}
