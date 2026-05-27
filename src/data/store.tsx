@@ -528,6 +528,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     supabase.from('backup_residents').select('*').order('deleted_at', { ascending: false }).then(({ data }) => {
       if (data) setBackupResidents(data.map(dbBackupResidentToApp))
     })
+
+    // Realtime subscription for checkins
+    const channel = supabase.channel('store-realtime')
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'checkins' }, () => {
+        supabase.from('checkins').select('*').then(({ data }) => {
+          if (data) setCheckins(data.map(dbCheckinToApp))
+        })
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [])
 
   // --- Users ---
