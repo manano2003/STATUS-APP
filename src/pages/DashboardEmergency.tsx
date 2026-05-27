@@ -12,6 +12,7 @@ export default function DashboardEmergency() {
   const [page, setPage] = useState(0)
   const [filterStatus, setFilterStatus] = useState<EmergencyStatusType | 'pending' | null>(null)
   const [residents, setResidents] = useState<Resident[]>([])
+  const [popupStatus, setPopupStatus] = useState<EmergencyStatusType | 'pending' | null>(null)
 
   useEffect(() => { loadResidents().then(setResidents) }, [])
 
@@ -61,7 +62,7 @@ export default function DashboardEmergency() {
         {typeCounts.filter(t => t.key !== 'pending').map(t => (
           <button
             key={t.key}
-            onClick={() => { setFilterStatus(filterStatus === t.key ? null : t.key); setPage(0) }}
+            onClick={() => setPopupStatus(t.key)}
             style={{
               flex: 1, padding: '8px 4px', borderRadius: 'var(--radius-sm)', fontSize: '10px', fontWeight: 700,
               whiteSpace: 'nowrap', cursor: 'pointer', textAlign: 'center',
@@ -75,6 +76,75 @@ export default function DashboardEmergency() {
           </button>
         ))}
       </div>
+
+      {/* Popup for status names */}
+      {popupStatus && (() => {
+        const isPending = popupStatus === 'pending'
+        const title = isPending ? 'ללא סטטוס' : EMERGENCY_STATUS_LABELS[popupStatus as EmergencyStatusType]
+        const color = isPending ? 'var(--color-text-secondary)' : EMERGENCY_STATUS_COLORS[popupStatus as EmergencyStatusType]
+        const names = isPending
+          ? residents.filter(r => !getResidentStatus(r.id)).map(r => r.name)
+          : residents.filter(r => getResidentStatus(r.id)?.status === popupStatus).map(r => r.name)
+
+        const generateText = () => {
+          let text = `*${title}*\n${names.length} תושבים\n\n`
+          names.forEach((n, i) => { text += `${i + 1}. ${n}\n` })
+          return text
+        }
+
+        return (
+          <div onClick={() => setPopupStatus(null)} style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999, padding: '20px',
+          }}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--color-bg-card)', borderRadius: 'var(--radius)',
+              border: `2px solid ${color}`, overflow: 'hidden',
+              width: '100%', maxWidth: '400px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+            }}>
+              <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)', textAlign: 'center', background: 'var(--color-bg-card)', position: 'sticky', top: 0, zIndex: 1 }}>
+                <span style={{ fontSize: '17px', fontWeight: 800, color }}>{title} ({names.length})</span>
+                <button onClick={() => setPopupStatus(null)} style={{
+                  position: 'absolute', top: 10, left: 10, background: 'none', border: 'none',
+                  color: 'var(--color-text-secondary)', fontSize: '20px', cursor: 'pointer', lineHeight: 1,
+                }}>✕</button>
+              </div>
+              <div style={{ overflowY: 'auto', flex: 1 }}>
+                {names.length === 0 ? (
+                  <p style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '13px' }}>אין תושבים</p>
+                ) : names.map(name => (
+                  <div key={name} style={{ padding: '10px 14px', borderBottom: '1px solid var(--color-border)', fontSize: '13px' }}>
+                    {name}
+                  </div>
+                ))}
+              </div>
+              <div style={{ padding: '10px', borderTop: '1px solid var(--color-border)', display: 'flex', gap: '8px' }}>
+                <button onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent(generateText())}`, '_blank') }} style={{
+                  flex: 1, padding: '12px', borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-success)', background: 'rgba(77, 232, 138, 0.08)',
+                  color: 'var(--color-success)', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-family)',
+                }}>
+                  <span style={{ fontSize: '18px' }}>💬</span> WhatsApp
+                </button>
+                <button onClick={() => {
+                  const text = generateText().replace(/\*/g, '')
+                  const w = window.open('', '_blank')
+                  if (w) { w.document.write(`<html dir="rtl"><head><title>${title}</title><style>body{font-family:Arial;padding:40px;direction:rtl}h1{color:#0A1628;border-bottom:2px solid #4DA6E8;padding-bottom:10px}pre{white-space:pre-wrap;font-family:Arial;font-size:14px;line-height:1.8}</style></head><body><h1>${title}</h1><pre>${text}</pre><script>window.print()<\/script></body></html>`); w.document.close() }
+                }} style={{
+                  flex: 1, padding: '12px', borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border)', background: 'var(--color-bg-card)',
+                  color: 'var(--color-accent)', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-family)',
+                }}>
+                  <span style={{ fontSize: '18px' }}>🖨️</span> הדפסה
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Search */}
       <input
