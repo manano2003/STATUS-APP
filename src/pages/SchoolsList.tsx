@@ -184,7 +184,7 @@ export default function SchoolsList() {
       </div>
 
       {!showAdd ? (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
           <button
             onClick={() => setShowAdd(true)}
             style={{
