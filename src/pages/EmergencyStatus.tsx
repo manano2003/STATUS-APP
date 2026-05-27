@@ -12,8 +12,8 @@ export default function EmergencyStatus() {
   const { emergencyStatuses, getResidentStatus, clearAllEmergencyStatuses } = useStore()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
-  const [filterStatus, setFilterStatus] = useState<EmergencyStatusType | 'pending' | null>(null)
   const [residents, setResidents] = useState<Resident[]>([])
+  const [popupStatus, setPopupStatus] = useState<EmergencyStatusType | 'pending' | null>(null)
 
   useEffect(() => { loadResidents().then(setResidents) }, [])
 
@@ -30,15 +30,9 @@ export default function EmergencyStatus() {
     }),
   ]
 
-  let filtered = search.trim()
+  const filtered = search.trim()
     ? residents.filter(r => r.name.toLowerCase().includes(search.trim().toLowerCase()))
     : residents
-
-  if (filterStatus === 'pending') {
-    filtered = filtered.filter(r => !getResidentStatus(r.id))
-  } else if (filterStatus) {
-    filtered = filtered.filter(r => getResidentStatus(r.id)?.status === filterStatus)
-  }
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const pageResidents = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -46,13 +40,12 @@ export default function EmergencyStatus() {
   return (
     <PageLayout title="עדכון תושבים" subtitle={`${emergencyStatuses.length}/${residents.length} עודכנו`}>
       <button
-        onClick={() => { setFilterStatus(filterStatus === 'pending' ? null : 'pending'); setPage(0) }}
+        onClick={() => setPopupStatus('pending')}
         style={{
           display: 'block', margin: '0 auto 12px', padding: '4px 12px', borderRadius: '10px',
           fontSize: '11px', fontWeight: 700, cursor: 'pointer', border: 'none',
-          background: filterStatus === 'pending' ? 'rgba(255,255,255,0.15)' : 'var(--color-bg-card)',
+          background: 'var(--color-bg-card)',
           color: pendingCount > 0 ? 'var(--color-danger)' : 'var(--color-success)',
-          outline: filterStatus === 'pending' ? '2px solid var(--color-text-secondary)' : 'none',
         }}
       >
         ללא סטטוס: {pendingCount}
@@ -63,11 +56,11 @@ export default function EmergencyStatus() {
         {typeCounts.filter(t => t.key !== 'pending').map(t => (
           <button
             key={t.key}
-            onClick={() => { setFilterStatus(filterStatus === t.key ? null : t.key); setPage(0) }}
+            onClick={() => setPopupStatus(t.key)}
             style={{
               flex: 1, padding: '12px 4px', borderRadius: 'var(--radius-sm)', fontSize: '10px', fontWeight: 700,
               whiteSpace: 'nowrap', cursor: 'pointer', textAlign: 'center', minHeight: '60px',
-              border: filterStatus === t.key ? '2px solid ' + t.color : '1px solid ' + t.color + '40',
+              border: '1px solid ' + t.color + '40',
               background: t.color + '15',
               color: t.color,
             }}
@@ -77,6 +70,44 @@ export default function EmergencyStatus() {
           </button>
         ))}
       </div>
+
+      {/* Popup for status names */}
+      {popupStatus && (() => {
+        const isPending = popupStatus === 'pending'
+        const title = isPending ? 'ללא סטטוס' : EMERGENCY_STATUS_LABELS[popupStatus as EmergencyStatusType]
+        const color = isPending ? 'var(--color-text-secondary)' : EMERGENCY_STATUS_COLORS[popupStatus as EmergencyStatusType]
+        const names = isPending
+          ? residents.filter(r => !getResidentStatus(r.id)).map(r => r.name)
+          : residents.filter(r => getResidentStatus(r.id)?.status === popupStatus).map(r => r.name)
+        return (
+          <div onClick={() => setPopupStatus(null)} style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999, padding: '20px',
+          }}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--color-bg-card)', borderRadius: 'var(--radius)',
+              border: `2px solid ${color}`, overflow: 'hidden',
+              width: '100%', maxWidth: '400px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+            }}>
+              <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)', textAlign: 'center', background: 'var(--color-bg-card)', position: 'sticky', top: 0, zIndex: 1 }}>
+                <span style={{ fontSize: '17px', fontWeight: 800, color }}>{title} ({names.length})</span>
+                <button onClick={() => setPopupStatus(null)} style={{
+                  position: 'absolute', top: 10, left: 10, background: 'none', border: 'none',
+                  color: 'var(--color-text-secondary)', fontSize: '20px', cursor: 'pointer', lineHeight: 1,
+                }}>✕</button>
+              </div>
+              <div style={{ overflowY: 'auto', flex: 1 }}>
+                {names.length === 0 ? (
+                  <p style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '13px' }}>אין תושבים</p>
+                ) : names.map(name => (
+                  <div key={name} style={{ padding: '10px 14px', borderBottom: '1px solid var(--color-border)', fontSize: '13px' }}>{name}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Search */}
       <input
@@ -166,34 +197,9 @@ export default function EmergencyStatus() {
         </div>
       )}
 
-      {/* Export for filtered view */}
-      {filterStatus && filterStatus !== 'pending' && (
-        <ExportButtons
-          title={`סטטוס בחירום — ${EMERGENCY_STATUS_LABELS[filterStatus]}`}
-          getText={() => {
-            const items = emergencyStatuses.filter(s => s.status === filterStatus)
-            let text = `${EMERGENCY_STATUS_LABELS[filterStatus]}: ${items.length} אנשים\n\n`
-            items.forEach(s => {
-              const r = residents.find(res => res.id === s.residentId)
-              text += `${r?.name ?? '?'} | ${r?.phone ?? ''} | ${s.updatedBy} | ${formatTime(s.updatedAt)}\n`
-            })
-            return text
-          }}
-          getTableData={() => {
-            const items = emergencyStatuses.filter(s => s.status === filterStatus)
-            return {
-              headers: ['שם', 'טלפון', 'שם המעדכן', 'שעת עדכון'],
-              rows: items.map(s => {
-                const r = residents.find(res => res.id === s.residentId)
-                return [r?.name ?? '', r?.phone ?? '', s.updatedBy, formatTime(s.updatedAt)]
-              }),
-            }
-          }}
-        />
-      )}
 
       {/* Export all - only when no filter */}
-      {!filterStatus && (
+      {(
         <ExportButtons
           title="סטטוס תושבים בחירום — כלל הסטטוסים"
           getText={() => {
