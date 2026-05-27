@@ -100,7 +100,7 @@ export default function SchoolClasses() {
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-danger)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)' }}
             >
-              <span style={{ fontSize: '40px', display: 'block', marginBottom: '8px' }}>🆘</span>
+              <span style={{ fontSize: '40px', display: 'block', marginBottom: '8px' }}>🚨</span>
               <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-danger)' }}>חירום</span>
             </button>
           </div>
@@ -153,7 +153,7 @@ export default function SchoolClasses() {
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-danger)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)' }}
             >
-              <span style={{ fontSize: '40px', display: 'block', marginBottom: '8px' }}>🆘</span>
+              <span style={{ fontSize: '40px', display: 'block', marginBottom: '8px' }}>🚨</span>
               <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-danger)' }}>חירום</span>
             </button>
           </div>
