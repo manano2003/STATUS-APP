@@ -27,6 +27,44 @@ export default function SchoolManagement() {
           {classes.length} כיתות | {totalStudents} תלמידים
         </p>
 
+        {/* Stats boxes */}
+        {(() => {
+          const today = new Date().toISOString().split('T')[0]
+          let totalPresent = 0
+          classes.forEach(c => {
+            try {
+              const attendance = JSON.parse(localStorage.getItem(`school_attendance_${schoolId}_${c.name}_${today}`) || '{}')
+              totalPresent += Object.values(attendance).filter(v => v === true).length
+            } catch {}
+          })
+          const percent = totalStudents > 0 ? Math.round((totalPresent / totalStudents) * 100) : 0
+          return (
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+              <div style={{
+                flex: 1, background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center',
+              }}>
+                <p style={{ fontSize: '28px', fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>
+                  {totalPresent}/{totalStudents}
+                </p>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>תלמידים נוכחים</p>
+              </div>
+              <div style={{
+                flex: 1, background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center',
+              }}>
+                <p style={{
+                  fontSize: '28px', fontWeight: 800, margin: '0 0 4px',
+                  color: percent >= 80 ? 'var(--color-success)' : percent >= 50 ? 'var(--color-warning)' : 'var(--color-danger)',
+                }}>
+                  {percent}%
+                </p>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>אחוז נוכחות</p>
+              </div>
+            </div>
+          )
+        })()}
+
         {/* Classes grid */}
         {classes.length > 0 ? (
           <div style={{
