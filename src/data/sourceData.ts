@@ -325,3 +325,29 @@ export async function saveCouncilUsersToDB(councilId: string, users: CouncilUser
   })
   return result?.success || false
 }
+
+// --- School Emergency ---
+export async function loadSchoolEmergencyFromDB(schoolId: string): Promise<Record<string, string>> {
+  const { data } = await supabase.from('school_emergency').select('class_name, status').eq('school_id', schoolId)
+  if (data) {
+    const map: Record<string, string> = {}
+    data.forEach((r: any) => { map[r.class_name] = r.status })
+    localStorage.setItem(`school_emergency_${schoolId}`, JSON.stringify(map))
+    return map
+  }
+  return getSchoolEmergencyFromCache(schoolId)
+}
+
+export function getSchoolEmergencyFromCache(schoolId: string): Record<string, string> {
+  try { return JSON.parse(localStorage.getItem(`school_emergency_${schoolId}`) || '{}') } catch { return {} }
+}
+
+export async function saveSchoolEmergencyToDB(schoolId: string, className: string, status: string, callerId: string): Promise<boolean> {
+  const cache = getSchoolEmergencyFromCache(schoolId)
+  cache[className] = status
+  localStorage.setItem(`school_emergency_${schoolId}`, JSON.stringify(cache))
+  const { data: result } = await supabase.rpc('save_school_emergency', {
+    caller_id: callerId, p_school_id: schoolId, p_class_name: className, p_status: status,
+  })
+  return result?.success || false
+}

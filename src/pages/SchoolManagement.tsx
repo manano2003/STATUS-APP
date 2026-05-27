@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { loadSchoolClassesFromDB, getSchoolClassesFromCache } from '../data/sourceData'
+import { loadSchoolClassesFromDB, getSchoolClassesFromCache, loadSchoolEmergencyFromDB, getSchoolEmergencyFromCache } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
 interface SchoolClass {
@@ -12,9 +12,13 @@ export default function SchoolManagement() {
   const { schoolId } = useParams<{ schoolId: string }>()
   const navigate = useNavigate()
   const [classes, setClasses] = useState<SchoolClass[]>(() => getSchoolClassesFromCache(schoolId || ''))
+  const [emergency, setEmergency] = useState<Record<string, string>>(() => getSchoolEmergencyFromCache(schoolId || ''))
 
   useEffect(() => {
-    if (schoolId) loadSchoolClassesFromDB(schoolId).then(setClasses)
+    if (schoolId) {
+      loadSchoolClassesFromDB(schoolId).then(setClasses)
+      loadSchoolEmergencyFromDB(schoolId).then(setEmergency)
+    }
   }, [schoolId])
   const [expandedClass, setExpandedClass] = useState<string | null>(null)
 
@@ -72,18 +76,26 @@ export default function SchoolManagement() {
             display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
             gap: '10px', marginBottom: '16px',
           }}>
-            {classes.map(c => (
+            {classes.map(c => {
+              const eStatus = emergency[c.name]
+              const isProtected = eStatus === 'protected'
+              const isNotProtected = eStatus === 'not_protected'
+              const borderColor = isProtected ? 'var(--color-success)' : isNotProtected ? 'var(--color-danger)' : (expandedClass === c.name ? 'var(--color-accent)' : 'var(--color-border)')
+              const bgColor = isProtected ? 'rgba(77, 232, 138, 0.1)' : isNotProtected ? 'rgba(232, 77, 77, 0.1)' : (expandedClass === c.name ? 'rgba(77, 166, 232, 0.15)' : 'var(--color-bg-card)')
+              const shadow = isProtected ? '0 0 12px rgba(77, 232, 138, 0.4)' : isNotProtected ? '0 0 12px rgba(232, 77, 77, 0.4)' : 'none'
+              return (
               <button
                 key={c.name}
                 onClick={() => setExpandedClass(expandedClass === c.name ? null : c.name)}
                 style={{
-                  background: expandedClass === c.name ? 'rgba(77, 166, 232, 0.15)' : 'var(--color-bg-card)',
-                  border: `1px solid ${expandedClass === c.name ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                  background: bgColor,
+                  border: `2px solid ${borderColor}`,
                   borderRadius: 'var(--radius)',
                   padding: '16px 8px',
                   cursor: 'pointer',
                   textAlign: 'center',
                   transition: 'all 0.2s ease',
+                  boxShadow: shadow,
                 }}
               >
                 <p style={{ fontSize: '16px', fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>
@@ -110,7 +122,7 @@ export default function SchoolManagement() {
                   )
                 })()}
               </button>
-            ))}
+            )})}
           </div>
         ) : (
           <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px' }}>

@@ -82,6 +82,8 @@ function getPageId(pathname: string): number | null {
   if (/^\/schools\/[^/]+\/management$/.test(pathname)) return 93
   if (/^\/schools\/[^/]+\/classes$/.test(pathname)) return 94
   if (/^\/schools\/[^/]+\/history$/.test(pathname)) return 96
+  if (/^\/schools\/[^/]+\/classes\/[^/]+\/attendance$/.test(pathname)) return 104
+  if (/^\/schools\/[^/]+\/classes\/[^/]+\/emergency$/.test(pathname)) return 105
   if (/^\/schools\/[^/]+\/history\/[^/]+$/.test(pathname)) return 103
   if (/^\/schools\/[^/]+\/history$/.test(pathname)) return 102
   if (/^\/schools\/[^/]+\/backup$/.test(pathname)) return 97
