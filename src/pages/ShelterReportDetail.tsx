@@ -105,6 +105,32 @@ export default function ShelterReportDetail() {
         )}
       </div>
 
+      {/* WhatsApp send button */}
+      <button
+        onClick={() => {
+          let text = `*${shelter.name} — מקלט ${shelter.number}*\n`
+          text += `סה"כ: ${count} נפשות\n\n`
+          text += `שם | טלפון | בית | נפשות\n`
+          text += `──────────────────\n`
+          checkins.forEach(c => {
+            text += `${c.userName} | ${c.userPhone || '—'} | ${c.userHouseNumber || '—'} | ${c.peopleCount}\n`
+          })
+          const msg = encodeURIComponent(text)
+          window.open(`https://wa.me/?text=${msg}`, '_blank')
+        }}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+          width: '100%', marginTop: '16px', padding: '14px',
+          borderRadius: 'var(--radius)', border: '1px solid var(--color-success)',
+          background: 'rgba(77, 232, 138, 0.08)', color: 'var(--color-success)',
+          fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+          fontFamily: 'var(--font-family)',
+        }}
+      >
+        <span style={{ fontSize: '18px' }}>💬</span>
+        שלח בוואטסאפ
+      </button>
+
     </PageLayout>
   )
 }
