@@ -73,6 +73,7 @@ import SchoolUsers from './pages/SchoolUsers'
 import SchoolPermissions from './pages/SchoolPermissions'
 import SchoolClassAttendance from './pages/SchoolClassAttendance'
 import SchoolClassEmergency from './pages/SchoolClassEmergency'
+import SchoolBackup from './pages/SchoolBackup'
 import SchoolHistory from './pages/SchoolHistory'
 import SchoolHistoryDay from './pages/SchoolHistoryDay'
 import CouncilPermissions from './pages/CouncilPermissions'
@@ -117,6 +118,7 @@ export default function App() {
         <Route path="/schools/:schoolId/classes/:className/attendance" element={<ProtectedRoute feature="admin"><SchoolClassAttendance /></ProtectedRoute>} />
         <Route path="/schools/:schoolId/classes/:className/emergency" element={<ProtectedRoute feature="admin"><SchoolClassEmergency /></ProtectedRoute>} />
         <Route path="/schools/:schoolId/permissions" element={<ProtectedRoute feature="admin"><SchoolPermissions /></ProtectedRoute>} />
+        <Route path="/schools/:schoolId/backup" element={<ProtectedRoute feature="admin"><SchoolBackup /></ProtectedRoute>} />
         <Route path="/schools/:schoolId/history" element={<ProtectedRoute feature="admin"><SchoolHistory /></ProtectedRoute>} />
         <Route path="/schools/:schoolId/history/:date" element={<ProtectedRoute feature="admin"><SchoolHistoryDay /></ProtectedRoute>} />
 

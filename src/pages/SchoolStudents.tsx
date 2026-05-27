@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useStore } from '../data/store'
 import { loadSchoolClassesFromDB, saveSchoolClassesToDB, getSchoolClassesFromCache } from '../data/sourceData'
+import { supabase } from '../data/supabase'
 import SchoolHome from './SchoolHome'
 import * as XLSX from 'xlsx'
 
@@ -16,7 +17,18 @@ export default function SchoolStudents() {
   const [classes, setClasses] = useState<SchoolClass[]>(() => getSchoolClassesFromCache(schoolId || ''))
   const [pendingUpload, setPendingUpload] = useState<SchoolClass[] | null>(null)
   const [expandedClass, setExpandedClass] = useState<string | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const deleteClass = async (className: string) => {
+    if (!schoolId) return
+    await supabase.rpc('soft_delete_school_class', { caller_id: currentUser?.id || '', p_school_id: schoolId, p_class_name: className })
+    const updated = classes.filter(c => c.name !== className)
+    setClasses(updated)
+    localStorage.setItem(`school_classes_${schoolId}`, JSON.stringify(updated))
+    setExpandedClass(null)
+    setDeleteConfirm(null)
+  }
 
   useEffect(() => {
     if (schoolId) loadSchoolClassesFromDB(schoolId).then(setClasses)
@@ -175,6 +187,26 @@ export default function SchoolStudents() {
                   }}>✕</button>
                 </div>
               ))}
+              {/* Delete class button */}
+              <div style={{ padding: '12px 14px', textAlign: 'center' }}>
+                {deleteConfirm === cls.name ? (
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                    <button onClick={() => deleteClass(cls.name)} style={{
+                      background: 'var(--color-danger)', color: '#fff', border: 'none',
+                      borderRadius: 'var(--radius-sm)', padding: '8px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                    }}>אישור מחיקה</button>
+                    <button onClick={() => setDeleteConfirm(null)} style={{
+                      background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-sm)', padding: '8px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                    }}>ביטול</button>
+                  </div>
+                ) : (
+                  <button onClick={() => setDeleteConfirm(cls.name)} style={{
+                    background: 'transparent', color: 'var(--color-danger)', border: '1px solid var(--color-danger)',
+                    borderRadius: 'var(--radius-sm)', padding: '8px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                  }}>מחיקת הכיתה</button>
+                )}
+              </div>
             </div>
           )
         })()}
