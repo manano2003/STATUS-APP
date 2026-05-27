@@ -21,6 +21,8 @@ export default function SchoolCouncilView() {
   const [allSchools, setAllSchools] = useState<SchoolRecord[]>([])
   const [selectedCouncil, setSelectedCouncil] = useState<string | null>(null)
   const [councilStats, setCouncilStats] = useState<{ totalStudents: number; totalPresent: number; totalAbsent: number }>({ totalStudents: 0, totalPresent: 0, totalAbsent: 0 })
+  const [schoolEmergencyMap, setSchoolEmergencyMap] = useState<Record<string, Record<string, string>>>({})
+  const [schoolClassCountMap, setSchoolClassCountMap] = useState<Record<string, number>>({})
   const councilLogos = loadCouncilLogos()
   const schoolLogos = loadSchoolLogos()
   const [selectedSchool, setSelectedSchool] = useState<string | null>(null)
@@ -41,8 +43,13 @@ export default function SchoolCouncilView() {
     const today = new Date().toISOString().split('T')[0]
     const loadStats = async () => {
       let totalStudents = 0, totalPresent = 0, totalAbsent = 0
+      const emergMap: Record<string, Record<string, string>> = {}
+      const classCountMap: Record<string, number> = {}
       for (const school of schools) {
         const cls = await loadSchoolClassesFromDB(school.id)
+        classCountMap[school.id] = cls.length
+        const emerg = await loadSchoolEmergencyFromDB(school.id)
+        emergMap[school.id] = emerg
         for (const c of cls) {
           totalStudents += c.students.length
           const att = await loadSchoolAttendanceFromDB(school.id, c.name, today)
@@ -53,12 +60,15 @@ export default function SchoolCouncilView() {
         }
       }
       setCouncilStats({ totalStudents, totalPresent, totalAbsent })
+      setSchoolEmergencyMap(emergMap)
+      setSchoolClassCountMap(classCountMap)
     }
     loadStats()
 
     // Realtime refresh
     const channel = supabase.channel(`council-stats-${selectedCouncil}`)
       .on('postgres_changes', { event: '*', schema: 'status', table: 'school_attendance' }, () => loadStats())
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_emergency' }, () => loadStats())
       .subscribe()
     return () => { supabase.removeChannel(channel) }
   }, [selectedCouncil, allSchools])
@@ -238,17 +248,27 @@ export default function SchoolCouncilView() {
             בתי ספר במועצה
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
-            {schools.map(school => (
+            {schools.map(school => {
+              const emerg = schoolEmergencyMap[school.id] || {}
+              const classCount = schoolClassCountMap[school.id] || 0
+              const hasAnyEmergency = Object.values(emerg).some(s => s === 'protected' || s === 'not_protected')
+              const protectedCount = Object.values(emerg).filter(s => s === 'protected').length
+              const allProtected = hasAnyEmergency && protectedCount === classCount && classCount > 0
+              const emergBorder = allProtected ? 'var(--color-success)' : hasAnyEmergency ? 'var(--color-danger)' : 'var(--color-border)'
+              const emergBg = allProtected ? 'rgba(77, 232, 138, 0.1)' : hasAnyEmergency ? 'rgba(232, 77, 77, 0.1)' : 'var(--color-bg-card)'
+              const emergShadow = allProtected ? '0 0 15px rgba(77, 232, 138, 0.4)' : hasAnyEmergency ? '0 0 15px rgba(232, 77, 77, 0.4)' : 'none'
+              return (
               <button
                 key={school.id}
                 onClick={() => setSelectedSchool(school.id)}
                 style={{
-                  background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                  background: emergBg, border: `2px solid ${emergBorder}`,
                   borderRadius: 'var(--radius)', width: '160px', padding: '32px 16px',
                   cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s ease',
+                  boxShadow: emergShadow,
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+                onMouseEnter={e => { if (!hasAnyEmergency) { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow)' } }}
+                onMouseLeave={e => { if (!hasAnyEmergency) { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' } }}
               >
                 {schoolLogos[school.id] ? (
                   <img src={schoolLogos[school.id]} alt={school.name} style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', display: 'block', margin: '0 auto 12px' }} />
@@ -257,7 +277,7 @@ export default function SchoolCouncilView() {
                 )}
                 <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text)' }}>{school.name}</span>
               </button>
-            ))}
+            )})}
           </div>
         </>
       } />
