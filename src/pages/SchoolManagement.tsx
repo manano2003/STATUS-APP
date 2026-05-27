@@ -198,7 +198,7 @@ export default function SchoolManagement() {
                     color: 'var(--color-text-secondary)', fontSize: '20px', cursor: 'pointer', lineHeight: 1,
                   }}>✕</button>
                 </div>
-                {teacher && (
+                {teacher ? (
                   <div style={{
                     display: 'flex', alignItems: 'center', padding: '10px 14px',
                     borderBottom: '2px solid var(--color-accent)', fontSize: '13px',
@@ -207,7 +207,19 @@ export default function SchoolManagement() {
                     <span style={{ flex: 1, fontWeight: 700, color: 'var(--color-accent)' }}>{teacher.fullName} (מורה)</span>
                     {teacher.phone && <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', direction: 'ltr' }}>{teacher.phone}</span>}
                   </div>
-                )}
+                ) : (() => {
+                  const classTeachers = staffUsers.filter((u: any) => u.className === cls.name || (u.roles && u.roles.includes('סגל חינוכי') && u.className === cls.name))
+                  return classTeachers.length > 0 ? classTeachers.map((t: any) => (
+                    <div key={t.id} style={{
+                      display: 'flex', alignItems: 'center', padding: '10px 14px',
+                      borderBottom: '2px solid var(--color-accent)', fontSize: '13px',
+                      background: 'rgba(77, 166, 232, 0.08)',
+                    }}>
+                      <span style={{ flex: 1, fontWeight: 700, color: 'var(--color-accent)' }}>{t.fullName} (מורה)</span>
+                      {t.phone && <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', direction: 'ltr' }}>{t.phone}</span>}
+                    </div>
+                  )) : null
+                })()}
                 {cls.students.map(student => {
                   const status = attendance[student]
                   return (
