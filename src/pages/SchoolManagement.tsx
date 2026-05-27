@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
 import { supabase } from '../data/supabase'
-import { loadSchoolClassesFromDB, getSchoolClassesFromCache, loadSchoolEmergencyFromDB, getSchoolEmergencyFromCache, saveSchoolEmergencyToDB } from '../data/sourceData'
+import { loadSchoolClassesFromDB, getSchoolClassesFromCache, loadSchoolEmergencyFromDB, getSchoolEmergencyFromCache, saveSchoolEmergencyToDB, loadSchoolUsersFromDB, getSchoolUsersFromCache } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
 interface SchoolClass {
@@ -16,12 +16,14 @@ export default function SchoolManagement() {
   const { currentUser } = useStore()
   const [classes, setClasses] = useState<SchoolClass[]>(() => getSchoolClassesFromCache(schoolId || ''))
   const [emergency, setEmergency] = useState<Record<string, string>>(() => getSchoolEmergencyFromCache(schoolId || ''))
+  const [staffUsers, setStaffUsers] = useState<any[]>(() => getSchoolUsersFromCache(schoolId || ''))
 
   useEffect(() => {
     if (!schoolId) return
     const refresh = () => {
       loadSchoolClassesFromDB(schoolId).then(setClasses)
       loadSchoolEmergencyFromDB(schoolId).then(setEmergency)
+      loadSchoolUsersFromDB(schoolId).then(setStaffUsers)
     }
     refresh()
 
@@ -173,7 +175,19 @@ export default function SchoolManagement() {
                 const today = new Date().toISOString().split('T')[0]
                 let attendance: Record<string, boolean> = {}
                 try { attendance = JSON.parse(localStorage.getItem(`school_attendance_${schoolId}_${cls.name}_${today}`) || '{}') } catch {}
-                return cls.students.map(student => {
+                const teacher = staffUsers.find((u: any) => u.className === cls.name)
+                return (<>
+                {teacher && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', padding: '10px 14px',
+                    borderBottom: '2px solid var(--color-accent)', fontSize: '13px',
+                    background: 'rgba(77, 166, 232, 0.08)',
+                  }}>
+                    <span style={{ flex: 1, fontWeight: 700, color: 'var(--color-accent)' }}>👩‍🏫 {teacher.fullName}</span>
+                    {teacher.phone && <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>{teacher.phone}</span>}
+                  </div>
+                )}
+                {cls.students.map(student => {
                   const status = attendance[student]
                   return (
                     <div key={student} style={{
@@ -189,7 +203,8 @@ export default function SchoolManagement() {
                       )}
                     </div>
                   )
-                })
+                })}
+                </>)
               })()}
             </div>
           )
