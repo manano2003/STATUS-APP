@@ -139,7 +139,7 @@ export default function SchoolManagement() {
                     </p>
                     {hasAttendance && absent > 0 && (
                       <p style={{ fontSize: '13px', fontWeight: 800, margin: '4px 0 0', color: 'var(--color-danger)' }}>
-                        -{absent}
+                        {absent}-
                       </p>
                     )}
                     </>

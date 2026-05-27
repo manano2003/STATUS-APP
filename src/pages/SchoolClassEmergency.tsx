@@ -83,6 +83,30 @@ export default function SchoolClassEmergency() {
             <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-danger)' }}>לא מוגנים</span>
           </button>
         </div>
+
+        {/* Instruction message */}
+        {currentStatus === 'protected' && (
+          <div style={{
+            marginTop: '24px', background: 'rgba(77, 232, 138, 0.1)',
+            border: '1px solid var(--color-success)', borderRadius: 'var(--radius)',
+            padding: '16px', textAlign: 'center',
+          }}>
+            <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-success)', margin: 0, lineHeight: 1.8 }}>
+              יש להישאר במרחב המוגן עד קבלת הודעה מפיקוד העורף
+            </p>
+          </div>
+        )}
+        {currentStatus === 'not_protected' && (
+          <div style={{
+            marginTop: '24px', background: 'rgba(232, 77, 77, 0.1)',
+            border: '1px solid var(--color-danger)', borderRadius: 'var(--radius)',
+            padding: '16px', textAlign: 'center',
+          }}>
+            <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-danger)', margin: 0, lineHeight: 1.8 }}>
+              יש להיכנס למרחב מוגן במיידי ולהישאר עד הודעה מפיקוד העורף
+            </p>
+          </div>
+        )}
       </>
     } />
   )
