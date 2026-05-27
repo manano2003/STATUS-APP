@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
 import { supabase } from '../data/supabase'
 import { loadSchoolsFromDB, loadSchoolClassesFromDB, loadSchoolEmergencyFromDB, loadSchoolUsersFromDB, loadSchoolAttendanceFromDB } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
@@ -12,7 +11,6 @@ const councils = [
 ]
 
 export default function SchoolCouncilView() {
-  const { schoolId } = useParams<{ schoolId: string }>()
   const [allSchools, setAllSchools] = useState<SchoolRecord[]>([])
   const [selectedCouncil, setSelectedCouncil] = useState<string | null>(null)
   const [selectedSchool, setSelectedSchool] = useState<string | null>(null)
