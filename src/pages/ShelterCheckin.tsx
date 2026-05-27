@@ -93,6 +93,7 @@ export default function ShelterCheckin() {
           borderRadius: 'var(--radius)',
           overflow: 'hidden',
           marginBottom: '20px',
+          marginTop: '40px',
         }}>
           <img
             src={shelter.imageUrl}
