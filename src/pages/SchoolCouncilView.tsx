@@ -1,0 +1,185 @@
+import { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import { supabase } from '../data/supabase'
+import { getSchoolsFromCache, loadSchoolClassesFromDB, loadSchoolEmergencyFromDB, loadSchoolUsersFromDB } from '../data/sourceData'
+import SchoolHome from './SchoolHome'
+
+interface SchoolClass { name: string; students: string[] }
+
+function getCouncilIdForSchool(schoolId: string): string {
+  const schools = getSchoolsFromCache()
+  const school = schools.find(s => s.id === schoolId)
+  return school?.councilId || 'mateh-yehuda'
+}
+
+export default function SchoolCouncilView() {
+  const { schoolId } = useParams<{ schoolId: string }>()
+  const councilId = schoolId ? getCouncilIdForSchool(schoolId) : ''
+  const councilSchools = getSchoolsFromCache().filter(s => s.councilId === councilId)
+
+  const [selectedSchool, setSelectedSchool] = useState<string | null>(null)
+  const [classes, setClasses] = useState<SchoolClass[]>([])
+  const [emergency, setEmergency] = useState<Record<string, string>>({})
+  const [staffUsers, setStaffUsers] = useState<any[]>([])
+  const [expandedClass, setExpandedClass] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!selectedSchool) return
+    loadSchoolClassesFromDB(selectedSchool).then(setClasses)
+    loadSchoolEmergencyFromDB(selectedSchool).then(setEmergency)
+    loadSchoolUsersFromDB(selectedSchool).then(setStaffUsers)
+
+    const channel = supabase.channel(`council-view-${selectedSchool}`)
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_attendance', filter: `school_id=eq.${selectedSchool}` }, () => {
+        loadSchoolClassesFromDB(selectedSchool).then(setClasses)
+      })
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_emergency', filter: `school_id=eq.${selectedSchool}` }, () => {
+        loadSchoolEmergencyFromDB(selectedSchool).then(setEmergency)
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [selectedSchool])
+
+  // School selected - show dashboard like page 93
+  if (selectedSchool) {
+    const schoolName = councilSchools.find(s => s.id === selectedSchool)?.name || selectedSchool
+    const totalStudents = classes.reduce((sum, c) => sum + c.students.length, 0)
+    const today = new Date().toISOString().split('T')[0]
+    let totalPresent = 0
+    classes.forEach(c => {
+      try {
+        const att = JSON.parse(localStorage.getItem(`school_attendance_${selectedSchool}_${c.name}_${today}`) || '{}')
+        totalPresent += Object.values(att).filter(v => v === true).length
+      } catch {}
+    })
+    const percent = totalStudents > 0 ? Math.round((totalPresent / totalStudents) * 100) : 0
+    const hasAnyEmergency = Object.values(emergency).some(s => s === 'protected' || s === 'not_protected')
+
+    return (
+      <SchoolHome content={
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <p style={{ fontSize: '18px', fontWeight: 800, color: '#fff', margin: 0 }}>{schoolName}</p>
+            <button onClick={() => { setSelectedSchool(null); setExpandedClass(null) }} style={{
+              background: 'rgba(77, 166, 232, 0.15)', border: '1px solid var(--color-accent)',
+              borderRadius: 'var(--radius-sm)', color: 'var(--color-accent)',
+              cursor: 'pointer', fontSize: '13px', fontWeight: 700, padding: '8px 16px',
+            }}>חזרה למועצה</button>
+          </div>
+
+          <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', textAlign: 'center', marginBottom: '16px' }}>
+            {classes.length} כיתות | {totalStudents} תלמידים
+          </p>
+
+          {/* Stats */}
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center' }}>
+              <p style={{ fontSize: '28px', fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>{totalPresent}/{totalStudents}</p>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>תלמידים נוכחים</p>
+            </div>
+            <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center' }}>
+              <p style={{ fontSize: '28px', fontWeight: 800, margin: '0 0 4px', color: percent >= 80 ? 'var(--color-success)' : percent >= 50 ? 'var(--color-warning)' : 'var(--color-danger)' }}>{percent}%</p>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>אחוז נוכחות</p>
+            </div>
+          </div>
+
+          {/* Class squares */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px', marginBottom: '16px' }}>
+            {classes.map(c => {
+              const eStatus = emergency[c.name]
+              const isProtected = eStatus === 'protected'
+              const isNotProtected = eStatus === 'not_protected'
+              const noStatus = hasAnyEmergency && !isProtected && !isNotProtected
+              const borderColor = isProtected ? 'var(--color-success)' : isNotProtected ? 'var(--color-danger)' : noStatus ? '#fff' : (expandedClass === c.name ? 'var(--color-accent)' : 'var(--color-border)')
+              const bgColor = isProtected ? 'rgba(77, 232, 138, 0.1)' : isNotProtected ? 'rgba(232, 77, 77, 0.1)' : noStatus ? 'rgba(255, 255, 255, 0.08)' : (expandedClass === c.name ? 'rgba(77, 166, 232, 0.15)' : 'var(--color-bg-card)')
+              const shadow = isProtected ? '0 0 12px rgba(77, 232, 138, 0.4)' : isNotProtected ? '0 0 12px rgba(232, 77, 77, 0.4)' : 'none'
+
+              let present = 0
+              try {
+                const att = JSON.parse(localStorage.getItem(`school_attendance_${selectedSchool}_${c.name}_${today}`) || '{}')
+                present = Object.values(att).filter(v => v === true).length
+              } catch {}
+              const hasAttendance = present > 0
+              const absent = c.students.length - present
+
+              return (
+                <button key={c.name} onClick={() => setExpandedClass(expandedClass === c.name ? null : c.name)}
+                  style={{ background: bgColor, border: `2px solid ${borderColor}`, borderRadius: 'var(--radius)', padding: '16px 8px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s ease', boxShadow: shadow }}>
+                  <p style={{ fontSize: '16px', fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>{c.name}</p>
+                  <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 4px' }}>{c.students.length} תלמידים</p>
+                  <p style={{ fontSize: '13px', fontWeight: 800, margin: 0, color: hasAttendance ? 'var(--color-success)' : 'var(--color-danger)', textShadow: hasAttendance ? '0 0 8px rgba(77, 232, 138, 0.6)' : '0 0 8px rgba(232, 77, 77, 0.6)' }}>
+                    {present} נוכחים
+                  </p>
+                  {hasAttendance && absent > 0 && (
+                    <p style={{ fontSize: '13px', fontWeight: 800, margin: '4px 0 0', color: 'var(--color-danger)' }}>{absent}-</p>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Expanded class */}
+          {expandedClass && (() => {
+            const cls = classes.find(c => c.name === expandedClass)
+            if (!cls) return null
+            let attendance: Record<string, boolean> = {}
+            try { attendance = JSON.parse(localStorage.getItem(`school_attendance_${selectedSchool}_${cls.name}_${today}`) || '{}') } catch {}
+            const teacher = staffUsers.find((u: any) => u.className === cls.name)
+            return (
+              <div style={{ background: 'rgba(255, 255, 255, 0.06)', borderRadius: 'var(--radius)', border: '2px solid var(--color-accent)', overflow: 'hidden', marginBottom: '16px' }}>
+                <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)', background: 'rgba(77, 166, 232, 0.05)', textAlign: 'center' }}>
+                  <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--color-accent)' }}>כיתה {cls.name} ({cls.students.length})</span>
+                </div>
+                {teacher && (
+                  <div style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: '2px solid var(--color-accent)', fontSize: '13px', background: 'rgba(77, 166, 232, 0.08)' }}>
+                    <span style={{ flex: 1, fontWeight: 700, color: 'var(--color-accent)' }}>👩‍🏫 {teacher.fullName}</span>
+                    {teacher.phone && <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>{teacher.phone}</span>}
+                  </div>
+                )}
+                {cls.students.map(student => {
+                  const status = attendance[student]
+                  return (
+                    <div key={student} style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: '1px solid var(--color-border)', fontSize: '13px' }}>
+                      <span style={{ flex: 1 }}>{student}</span>
+                      {status === true && <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-success)' }}>נוכח</span>}
+                      {status === false && <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-danger)' }}>לא נוכח</span>}
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })()}
+        </>
+      } />
+    )
+  }
+
+  // Council view - show school squares
+  return (
+    <SchoolHome content={
+      <>
+        <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', textAlign: 'center', marginBottom: '16px' }}>
+          מוסדות חינוך במועצה
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
+          {councilSchools.map(school => (
+            <button
+              key={school.id}
+              onClick={() => setSelectedSchool(school.id)}
+              style={{
+                background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius)', width: '160px', padding: '32px 16px',
+                cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+            >
+              <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>🏫</span>
+              <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text)' }}>{school.name}</span>
+            </button>
+          ))}
+        </div>
+      </>
+    } />
+  )
+}

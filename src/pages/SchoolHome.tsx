@@ -1,4 +1,5 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useStore } from '../data/store'
 import BackButton from '../components/BackButton'
 
 const STORAGE_KEY = 'status_schools'
@@ -15,20 +16,48 @@ function getSchoolName(id: string): string {
   return id === 'hartuv' ? 'הרטוב' : id
 }
 
+function getSchoolCouncilId(id: string): string {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      const schools = JSON.parse(saved)
+      const school = schools.find((s: any) => s.id === id)
+      if (school) return school.councilId
+    }
+  } catch {}
+  return 'mateh-yehuda'
+}
+
 export default function SchoolHome({ content, backTo }: { content?: React.ReactNode; backTo?: string }) {
   const { schoolId } = useParams<{ schoolId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
+  const { currentUser } = useStore()
 
   const schoolName = schoolId ? getSchoolName(schoolId) : 'בית ספר'
-  const currentTab = location.pathname.includes('/management') ? 'management'
+  const currentTab = location.pathname.includes('/council-view') ? 'council'
+    : location.pathname.includes('/management') ? 'management'
     : location.pathname.includes('/classes') ? 'classes'
     : 'home'
+
+  // Check if user can see council tab (ADMIN or עובד מועצה)
+  const isAdmin = currentUser?.roles?.includes('ADMIN')
+  const councilId = schoolId ? getSchoolCouncilId(schoolId) : ''
+  const isCouncilWorker = (() => {
+    try {
+      const councilUsers = JSON.parse(localStorage.getItem(`council_users_${councilId}`) || '[]')
+      return councilUsers.some((u: any) => u.phone === currentUser?.phone || u.email === currentUser?.email)
+    } catch { return false }
+  })()
+  const showCouncilTab = isAdmin || isCouncilWorker
 
   const tabs = [
     { id: 'classes', label: 'כיתות', icon: '📚', path: `/schools/${schoolId}/classes` },
     { id: 'management', label: 'מזכירות', icon: '📊', path: `/schools/${schoolId}/management` },
+    ...(showCouncilTab ? [{ id: 'council', label: 'מועצה', icon: '🏛️', path: `/schools/${schoolId}/council-view` }] : []),
   ]
+
+  const subtitleMap: Record<string, string> = { management: 'מזכירות', classes: 'כיתות', council: 'מועצה' }
 
   return (
     <div style={{ paddingTop: '56px', minHeight: '100vh', paddingBottom: '80px' }}>
@@ -44,7 +73,7 @@ export default function SchoolHome({ content, backTo }: { content?: React.ReactN
         </h1>
         {currentTab !== 'home' && (
           <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', margin: '4px 0 0', textAlign: 'center' }}>
-            {currentTab === 'management' ? 'מזכירות' : 'כיתות'}
+            {subtitleMap[currentTab] || ''}
           </p>
         )}
       </div>
