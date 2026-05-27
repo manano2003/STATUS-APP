@@ -17,7 +17,7 @@ export default function DashboardUsers() {
     if (!search.trim()) return true
     const q = search.trim().toLowerCase()
     return u.fullName.toLowerCase().includes(q) || u.houseNumber.includes(q)
-  })
+  }).sort((a, b) => a.fullName.localeCompare(b.fullName, 'he'))
 
   const filteredGuests = guestUsers.filter(u => {
     if (!search.trim()) return true
