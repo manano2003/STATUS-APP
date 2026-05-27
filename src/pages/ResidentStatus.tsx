@@ -83,7 +83,7 @@ export default function ResidentStatus() {
               }}
             >
               {s.icon === 'candle' ? (
-                <img src="/STATUS-APP/candle.png" alt="הרדוף" style={{ width: '28px', height: '28px', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+                <img src="/STATUS-APP/candle.png" alt="הרדוף" style={{ width: '28px', height: '28px', objectFit: 'contain', filter: 'invert(1)' }} />
               ) : (
                 <span style={{ fontSize: '24px' }}>{s.icon}</span>
               )}
