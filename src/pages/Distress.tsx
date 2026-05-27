@@ -1,22 +1,12 @@
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { distressTypes } from '../data/distressTypes'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function Distress() {
-  const navigate = useNavigate()
+  const [showPopup, setShowPopup] = useState(false)
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '500px', margin: '0 auto' }}>
-      <BackButton />
-
-      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-danger)', marginBottom: '8px' , textAlign: 'center'}}>
-          לחצן מצוקה
-        </h1>
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' , textAlign: 'center'}}>
-          בחר את סוג האירוע לשליחת קריאת מצוקה
-        </p>
-      </div>
+    <PageLayout title="לחצן מצוקה" subtitle="בחר את סוג האירוע לשליחת קריאת מצוקה">
 
       <div style={{
         display: 'grid',
@@ -26,7 +16,7 @@ export default function Distress() {
         {distressTypes.map(type => (
           <button
             key={type.id}
-            onClick={() => navigate(`/distress/${type.id}`)}
+            onClick={() => setShowPopup(true)}
             style={{
               background: 'var(--color-bg-card)',
               border: '2px solid var(--color-border)',
@@ -49,19 +39,14 @@ export default function Distress() {
           >
             <div style={{
               width: '100%',
-              height: '120px',
+              aspectRatio: '16 / 9',
               overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '12px',
             }}>
               <img
                 src={type.imageUrl}
                 alt={type.label}
                 style={{
-                  maxWidth: '100%', maxHeight: '100%', objectFit: 'contain',
-                  ...(type.id === 'medical' ? { filter: 'invert(1)' } : {}),
+                  width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center',
                 }}
                 loading="lazy"
               />
@@ -79,6 +64,50 @@ export default function Distress() {
           </button>
         ))}
       </div>
-    </div>
+
+      {showPopup && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+        }} onClick={() => setShowPopup(false)}>
+          <div style={{
+            background: 'var(--color-bg-card)',
+            border: '2px solid var(--color-accent)',
+            borderRadius: 'var(--radius)',
+            padding: '32px 24px',
+            maxWidth: '320px',
+            textAlign: 'center',
+          }} onClick={e => e.stopPropagation()}>
+            <p style={{ fontSize: '40px', marginBottom: '16px' }}>🚧</p>
+            <h2 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '12px', color: 'var(--color-accent)', textAlign: 'center' }}>
+              אזור בבניה
+            </h2>
+            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '20px', textAlign: 'center' }}>
+              פיצ'ר זה יהיה זמין בקרוב
+            </p>
+            <button
+              onClick={() => setShowPopup(false)}
+              style={{
+                background: 'var(--color-accent)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 'var(--radius-sm)',
+                padding: '10px 32px',
+                fontSize: '15px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              הבנתי
+            </button>
+          </div>
+        </div>
+      )}
+    </PageLayout>
   )
 }

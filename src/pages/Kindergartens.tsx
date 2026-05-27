@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom'
-import { kindergartens } from '../data/kindergartens'
+import { getSourceKindergartens } from '../data/sourceData'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function Kindergartens() {
   const navigate = useNavigate()
   const { getKindergartenAttendance } = useStore()
+  const kindergartens = getSourceKindergartens()
 
   const totalPresent = kindergartens.reduce((sum, k) => {
     const att = getKindergartenAttendance(k.id)
@@ -16,12 +17,7 @@ export default function Kindergartens() {
   const totalChildren = kindergartens.reduce((sum, k) => sum + k.children.length, 0)
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 80px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton />
-
-      <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        גני ילדים
-      </h1>
+    <PageLayout title="גני ילדים">
       <p style={{ color: 'var(--color-accent)', fontSize: '18px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
         נוכחים: {totalPresent} מתוך {totalChildren}
       </p>
@@ -72,6 +68,6 @@ export default function Kindergartens() {
           )
         })}
       </div>
-    </div>
+    </PageLayout>
   )
 }

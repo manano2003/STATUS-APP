@@ -1,12 +1,17 @@
 import { QRCodeSVG } from 'qrcode.react'
-import { regularShelters } from '../data/shelters'
-import BackButton from '../components/BackButton'
+import { getRegularShelters } from '../data/shelters'
+import PageLayout from '../components/PageLayout'
+
+function sanitize(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
 
 export default function ShelterQRCodes() {
+  const regularShelters = getRegularShelters()
 
   const getQRUrl = (shelterId: string) => {
     // In production this will be the real domain
-    return `${window.location.origin}/shelter/${shelterId}`
+    return `${window.location.origin}/STATUS-APP/shelter/${shelterId}`
   }
 
   const handlePrint = (shelterName: string, shelterNumber: number, shelterId: string) => {
@@ -22,7 +27,7 @@ export default function ShelterQRCodes() {
     const imgSrc = `data:image/svg+xml;base64,${svgBase64}`
 
     printWindow.document.write(`
-      <html dir="rtl"><head><title>QR - ${shelterName}</title>
+      <html dir="rtl"><head><title>QR - ${sanitize(shelterName)}</title>
       <style>
         body { font-family: Arial; display: flex; flex-direction: column; align-items: center;
           justify-content: center; min-height: 100vh; margin: 0; }
@@ -38,7 +43,7 @@ export default function ShelterQRCodes() {
       </style></head>
       <body>
         <div class="container">
-          <h1>${shelterName}</h1>
+          <h1>${sanitize(shelterName)}</h1>
           <h2>מקלט ${shelterNumber}</h2>
           <img src="${imgSrc}" />
           <p>סרקו את הברקוד כדי להירשם למקלט</p>
@@ -52,15 +57,7 @@ export default function ShelterQRCodes() {
   }
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton to="/dashboard/sources" />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        ברקודים למקלטים
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '20px', textAlign: 'center' }}>
-        {regularShelters.length} מקלטים — הדפס ותלה על קיר המקלט
-      </p>
+    <PageLayout title="ברקודים למקלטים" subtitle={`${regularShelters.length} מקלטים — הדפס ותלה על קיר המקלט`} backTo="/dashboard/sources">
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {regularShelters.map(shelter => (
@@ -134,7 +131,7 @@ export default function ShelterQRCodes() {
             const imgSrc = `data:image/svg+xml;base64,${svgBase64}`
             pages += `
               <div class="page">
-                <h1>${shelter.name}</h1>
+                <h1>${sanitize(shelter.name)}</h1>
                 <h2>מקלט ${shelter.number}</h2>
                 <img src="${imgSrc}" />
                 <p>סרקו את הברקוד כדי להירשם למקלט</p>
@@ -187,6 +184,6 @@ export default function ShelterQRCodes() {
       >
         <span>🖨️</span> הדפס את כל הברקודים
       </button>
-    </div>
+    </PageLayout>
   )
 }

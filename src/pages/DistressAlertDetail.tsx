@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
 import { getDistressTypeInfo } from '../data/distressTypes'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function DistressAlertDetail() {
   const { id } = useParams<{ id: string }>()
@@ -28,8 +28,7 @@ export default function DistressAlertDetail() {
   ]
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '500px', margin: '0 auto' }}>
-      <BackButton to="/dashboard/distress" />
+    <PageLayout title={alert.userName} backTo="/dashboard/distress">
 
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
         <div style={{
@@ -40,7 +39,6 @@ export default function DistressAlertDetail() {
         }}>
           🚨
         </div>
-        <h1 style={{ fontSize: '22px', fontWeight: 800, margin: '0 0 4px' , textAlign: 'center'}}>{alert.userName}</h1>
         <span style={{
           fontSize: '12px', padding: '3px 12px', borderRadius: '12px',
           background: 'rgba(232, 77, 77, 0.15)', color: 'var(--color-danger)', fontWeight: 700,
@@ -129,6 +127,6 @@ export default function DistressAlertDetail() {
       >
         מחק קריאה
       </button>
-    </div>
+    </PageLayout>
   )
 }

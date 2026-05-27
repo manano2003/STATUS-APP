@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { clubs } from '../data/clubs'
+import { getSourceClubs } from '../data/sourceData'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import { supabase } from '../data/supabase'
+import PageLayout from '../components/PageLayout'
 import ExportButtons from '../components/ExportButtons'
 
 export default function DashboardClubs() {
-  const { getClubAttendance } = useStore()
+  const { getClubAttendance, currentUser } = useStore()
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const clubs = getSourceClubs()
 
   const totalChildren = clubs.reduce((sum, k) => sum + k.children.length, 0)
   const totalStaff = clubs.reduce((sum, k) => sum + k.staff.length, 0)
@@ -25,12 +27,7 @@ export default function DashboardClubs() {
   const totalPresent = presentChildren + presentStaff
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton to="/dashboard" />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '12px', textAlign: 'center' }}>
-        נוכחות במועדונים
-      </h1>
+    <PageLayout title="נוכחות במועדונים" backTo="/dashboard">
 
       {/* 3 Summary Boxes */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
@@ -178,6 +175,23 @@ export default function DashboardClubs() {
         })}
       </div>
 
+      <button
+        onClick={async () => {
+          if (!confirm('האם לאפס את כל הנוכחות במועדונים?')) return
+          await supabase.rpc('secure_clear_club_attendance', { caller_id: currentUser?.id })
+          window.location.reload()
+        }}
+        style={{
+          display: 'block', width: '100%', marginTop: '16px', padding: '14px',
+          borderRadius: 'var(--radius)',
+          border: '1px solid rgba(232, 77, 77, 0.3)',
+          background: 'rgba(232, 77, 77, 0.08)',
+          color: 'var(--color-danger)', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+        }}
+      >
+        איפוס נוכחות
+      </button>
+
       <ExportButtons
         title="דוח נוכחות במועדונים"
         getText={() => {
@@ -202,6 +216,6 @@ export default function DashboardClubs() {
           return { headers, rows }
         }}
       />
-    </div>
+    </PageLayout>
   )
 }

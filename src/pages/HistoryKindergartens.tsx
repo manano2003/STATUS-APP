@@ -1,22 +1,15 @@
 import { useNavigate } from 'react-router-dom'
-import { kindergartens } from '../data/kindergartens'
+import { getSourceKindergartens } from '../data/sourceData'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function HistoryKindergartens() {
   const navigate = useNavigate()
   const { kindergartenHistory } = useStore()
+  const kindergartens = getSourceKindergartens()
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton to="/dashboard/history" />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        👶 היסטוריית נוכחות בגנים
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
-        סה"כ <span style={{ color: 'var(--color-accent)', fontWeight: 800 }}>{kindergartenHistory.length}</span> רישומים
-      </p>
+    <PageLayout title="👶 היסטוריית נוכחות בגנים" subtitle={`סה"כ ${kindergartenHistory.length} רישומים`} backTo="/dashboard/history">
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {kindergartens.map(kg => {
@@ -46,6 +39,6 @@ export default function HistoryKindergartens() {
           )
         })}
       </div>
-    </div>
+    </PageLayout>
   )
 }

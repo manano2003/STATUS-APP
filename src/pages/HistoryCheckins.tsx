@@ -1,6 +1,6 @@
 import { useStore } from '../data/store'
 import { getShelterById } from '../data/shelters'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function HistoryCheckins() {
   const { checkinHistory } = useStore()
@@ -11,15 +11,7 @@ export default function HistoryCheckins() {
   const sorted = [...checkinHistory].sort((a, b) => b.checkinTime - a.checkinTime)
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton to="/dashboard/history" />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' , justifyContent: 'center'}}>
-        <span>🏛️</span> היסטוריית נוכחות במקלטים
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px' , textAlign: 'center'}}>
-        סה"כ <span style={{ color: 'var(--color-accent)', fontWeight: 800 }}>{checkinHistory.length}</span> רישומים
-      </p>
+    <PageLayout title="🏛️ היסטוריית נוכחות במקלטים" subtitle={`סה"כ ${checkinHistory.length} רישומים`} backTo="/dashboard/history">
 
       <div style={{
         background: 'var(--color-bg-card)', borderRadius: 'var(--radius)',
@@ -72,6 +64,6 @@ export default function HistoryCheckins() {
           </>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

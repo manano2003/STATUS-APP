@@ -34,11 +34,39 @@ export const shelters: Shelter[] = [
   { id: 'btyaFyyuroj9gEIcBYoz', name: 'אני בבית ללא ממ"ד', number: 25, imageUrl: 'https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/2crKL1z2JxE1wRcRMCAJ/pub/EQqwsuH8ypYPlqigws55.avif', isSpecialStatus: true },
 ]
 
+// Image URL maps (preserves images when loading from source data)
+const imageByName: Record<string, string> = {}
+const imageByNumber: Record<number, string> = {}
+shelters.forEach(s => { imageByName[s.name] = s.imageUrl; imageByNumber[s.number] = s.imageUrl })
+
+export function getSheltersWithSourceData(): Shelter[] {
+  try {
+    const saved = localStorage.getItem('source_shelters')
+    if (saved) {
+      const source: Shelter[] = JSON.parse(saved)
+      if (source.length > 0) {
+        return source
+      }
+    }
+  } catch {}
+  return shelters
+}
+
 export const regularShelters = shelters.filter(s => !s.isSpecialStatus)
 export const specialStatuses = shelters.filter(s => s.isSpecialStatus)
 
+// Dynamic getters that use source data with fallback to hardcoded
+export function getRegularShelters(): Shelter[] {
+  return getSheltersWithSourceData().filter(s => !s.isSpecialStatus)
+}
+
+export function getSpecialStatuses(): Shelter[] {
+  return getSheltersWithSourceData().filter(s => s.isSpecialStatus)
+}
+
 export function getShelterById(id: string): Shelter | undefined {
-  return shelters.find(s => s.id === id)
+  const all = getSheltersWithSourceData()
+  return all.find(s => s.id === id)
 }
 
 export function getTrafficLight(count: number): { color: string; label: string; bg: string } {

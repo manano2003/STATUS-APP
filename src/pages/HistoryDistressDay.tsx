@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { getDistressTypeInfo } from '../data/distressTypes'
 import { useStore, type DistressType } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function HistoryDistressDay() {
   const { type, date } = useParams<{ type: string; date: string }>()
@@ -20,13 +20,7 @@ export default function HistoryDistressDay() {
   const formatTime = (ts: number) => new Date(ts).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '500px', margin: '0 auto' }}>
-      <BackButton to={`/dashboard/history/distress/${typeInfo.id}`} />
-
-      <h1 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>{typeInfo.label}</h1>
-      <p style={{ color: 'var(--color-danger)', fontSize: '16px', fontWeight: 700, marginBottom: '4px', textAlign: 'center' }}>
-        {date ? formatDate(date) : ''}
-      </p>
+    <PageLayout title={typeInfo.label} subtitle={date ? formatDate(date) : ''} backTo={`/dashboard/history/distress/${typeInfo.id}`}>
       <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
         {entries.length} קריאות
       </p>
@@ -66,6 +60,6 @@ export default function HistoryDistressDay() {
           </>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

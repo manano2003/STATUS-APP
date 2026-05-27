@@ -17,6 +17,12 @@ export default function ShelterCheckin() {
   const shelter = id ? getShelterById(id) : undefined
   const existingCheckin = currentUser ? getUserCheckin(currentUser.id) : undefined
 
+  // If not logged in, redirect to register with return URL
+  if (!currentUser && shelter) {
+    navigate(`/register?returnTo=/shelter/${id}`, { replace: true })
+    return null
+  }
+
   if (!shelter) {
     return (
       <div style={{ paddingTop: '100px', textAlign: 'center' }}>
@@ -136,13 +142,13 @@ export default function ShelterCheckin() {
         {/* Warning if already checked in elsewhere */}
         {existingCheckin && existingCheckin.shelterId !== shelter.id && (
           <div style={{
-            background: 'rgba(232, 197, 77, 0.1)',
-            border: '1px solid rgba(232, 197, 77, 0.3)',
+            background: 'rgba(232, 77, 77, 0.1)',
+            border: '1px solid rgba(232, 77, 77, 0.3)',
             borderRadius: 'var(--radius-sm)',
             padding: '10px 14px',
             marginBottom: '16px',
             fontSize: '13px',
-            color: 'var(--color-warning)',
+            color: 'var(--color-danger)',
             textAlign: 'center',
           }}>
             שים לב: אתה רשום כרגע במקלט אחר. רישום חדש יחליף את הקודם.
@@ -190,15 +196,17 @@ export default function ShelterCheckin() {
           דווח כניסה למקלט
         </Button>
 
-        {/* Guest Registration Button (for shelter managers) */}
-        <Button
-          variant="secondary"
-          size="md"
-          style={{ width: '100%', marginTop: '12px' }}
-          onClick={() => navigate(`/shelter/${shelter.id}/guest`)}
-        >
-          רישום אורח (מנהל מקלט)
-        </Button>
+        {/* Guest Registration Button (for shelter managers / חמ"ל / ADMIN only) */}
+        {currentUser && (currentUser.roles.includes('מנהל מקלט') || currentUser.roles.includes('חמ"ל') || currentUser.roles.includes('ADMIN')) && (
+          <Button
+            variant="secondary"
+            size="md"
+            style={{ width: '100%', marginTop: '12px' }}
+            onClick={() => navigate(`/shelter/${shelter.id}/guest`)}
+          >
+            רישום אורח (מנהל מקלט)
+          </Button>
+        )}
 
         <button
           onClick={() => navigate('/report')}

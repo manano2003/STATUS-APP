@@ -1,21 +1,17 @@
 import { useState } from 'react'
-import { regularShelters, getTrafficLight } from '../data/shelters'
+import { getRegularShelters, getTrafficLight } from '../data/shelters'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function AdminShelters() {
   const { getShelterPeopleCount, getShelterCheckins } = useStore()
   const [expandedShelterId, setExpandedShelterId] = useState<string | null>(null)
+  const regularShelters = getRegularShelters()
 
   const totalPeople = regularShelters.reduce((sum, s) => sum + getShelterPeopleCount(s.id), 0)
 
   return (
-    <div style={{ paddingTop: '80px', padding: '80px 24px 24px', maxWidth: '1000px', margin: '0 auto' }}>
-      <BackButton />
-      <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px' , textAlign: 'center'}}>סיכום מקלטים</h1>
-      <p style={{ color: 'var(--color-text-secondary)', marginBottom: '24px' , textAlign: 'center'}}>
-        סה"כ {totalPeople} אנשים במקלטים
-      </p>
+    <PageLayout title="סיכום מקלטים" subtitle={`סה"כ ${totalPeople} אנשים במקלטים`}>
 
       {/* Summary Table */}
       <div style={{
@@ -149,6 +145,6 @@ export default function AdminShelters() {
           )
         })}
       </div>
-    </div>
+    </PageLayout>
   )
 }

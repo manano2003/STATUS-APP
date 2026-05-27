@@ -1,0 +1,151 @@
+import { useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import PageLayout from '../components/PageLayout'
+
+const STORAGE_KEY = 'community_logos'
+
+function loadLogos(): Record<string, string> {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') } catch { return {} }
+}
+
+const defaultCommunities = [
+  { id: 'tsora', name: 'קיבוץ צרעה', icon: '🏘️' },
+]
+
+export default function CommunitiesList() {
+  const navigate = useNavigate()
+  const [logos, setLogos] = useState<Record<string, string>>(loadLogos)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploadingId, setUploadingId] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const handleImageClick = (e: React.MouseEvent, communityId: string) => {
+    e.stopPropagation()
+    setUploadingId(communityId)
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !uploadingId) return
+    const reader = new FileReader()
+    reader.onload = (evt) => {
+      const dataUrl = evt.target?.result as string
+      const newLogos = { ...logos, [uploadingId]: dataUrl }
+      setLogos(newLogos)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newLogos))
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+    setUploadingId(null)
+  }
+
+  return (
+    <PageLayout title="ישובים" backTo="/communities">
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '16px',
+        justifyContent: 'center',
+      }}>
+        {defaultCommunities.map(c => (
+          <div key={c.id} style={{ position: 'relative' }}>
+            {/* Upload icon */}
+            <button
+              onClick={(e) => handleImageClick(e, c.id)}
+              style={{
+                position: 'absolute',
+                top: 6,
+                right: 6,
+                zIndex: 2,
+                background: 'rgba(77, 166, 232, 0.2)',
+                border: '1px solid var(--color-accent)',
+                borderRadius: '50%',
+                width: '28px',
+                height: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '13px',
+                color: 'var(--color-accent)',
+                lineHeight: 1,
+                padding: 0,
+              }}
+            >
+              📷
+            </button>
+
+            <button
+              onClick={() => navigate('/dashboard')}
+              style={{
+                background: 'var(--color-bg-card)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius) var(--radius) 0 0',
+                width: '160px',
+                padding: '32px 16px',
+                cursor: 'pointer',
+                textAlign: 'center',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = 'var(--color-accent)'
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = 'var(--shadow-glow)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'rgba(77, 166, 232, 0.2)'
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
+            >
+              {logos[c.id] ? (
+                <img src={logos[c.id]} alt={c.name} style={{
+                  width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover',
+                  display: 'block', margin: '0 auto 12px',
+                }} />
+              ) : (
+                <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>{c.icon}</span>
+              )}
+              <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text)' }}>{c.name}</span>
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                const link = `${window.location.origin}/STATUS-APP/c/${c.id}`
+                navigator.clipboard.writeText(link)
+                setCopiedId(c.id)
+                setTimeout(() => setCopiedId(null), 2000)
+              }}
+              style={{
+                display: 'block',
+                width: '160px',
+                padding: '8px',
+                background: copiedId === c.id ? 'rgba(77, 232, 138, 0.15)' : 'rgba(77, 166, 232, 0.1)',
+                border: `1px solid ${copiedId === c.id ? 'var(--color-success)' : 'var(--color-border)'}`,
+                borderTop: 'none',
+                borderRadius: '0 0 var(--radius) var(--radius)',
+                color: copiedId === c.id ? 'var(--color-success)' : 'var(--color-accent)',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                textAlign: 'center',
+              }}
+            >
+              {copiedId === c.id ? 'הלינק הועתק!' : 'העתק לינק'}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+    </PageLayout>
+  )
+}

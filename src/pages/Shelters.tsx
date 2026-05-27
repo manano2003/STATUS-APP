@@ -1,19 +1,22 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { regularShelters, specialStatuses, getTrafficLight, getShelterById } from '../data/shelters'
+import { getRegularShelters, getSpecialStatuses, getTrafficLight, getShelterById } from '../data/shelters'
 import { useStore } from '../data/store'
+import PageLayout from '../components/PageLayout'
 
 export default function Shelters() {
   const navigate = useNavigate()
   const { getShelterPeopleCount, currentUser, getUserCheckin, removeCheckin, lastCheckinUserId } = useStore()
   const [showConfirm, setShowConfirm] = useState(false)
 
+  const regularShelters = getRegularShelters()
+  const specialStatuses = getSpecialStatuses()
   const effectiveUserId = currentUser?.id ?? lastCheckinUserId
   const userCheckin = effectiveUserId ? getUserCheckin(effectiveUserId) : undefined
   const shelterName = userCheckin ? getShelterById(userCheckin.shelterId)?.name ?? userCheckin.shelterId : ''
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '1100px', margin: '0 auto' }}>
+    <PageLayout title="מקלטים" subtitle="בחר מקלט לדיווח כניסה">
 
       {userCheckin && (
         <div style={{
@@ -88,11 +91,6 @@ export default function Shelters() {
         </div>
       )}
 
-      <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px', textAlign: 'center' }}>מקלטים</h1>
-      <p style={{ color: 'var(--color-text-secondary)', marginBottom: '32px', textAlign: 'center' }}>
-        בחר מקלט לדיווח כניסה
-      </p>
-
       {/* Shelter Grid */}
       <div style={{
         display: 'grid',
@@ -130,7 +128,7 @@ export default function Shelters() {
             >
               <div style={{
                 width: '100%',
-                height: '100px',
+                aspectRatio: '16 / 9',
                 overflow: 'hidden',
               }}>
                 <img
@@ -244,6 +242,6 @@ export default function Shelters() {
           )
         })}
       </div>
-    </div>
+    </PageLayout>
   )
 }

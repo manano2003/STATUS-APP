@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getShelterById } from '../data/shelters'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר']
 const DAYS_HE = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳']
@@ -30,15 +30,7 @@ export default function HistoryIssueCalendar() {
     })
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '400px', margin: '0 auto' }}>
-      <BackButton to="/dashboard/history/issues" />
-
-      <h1 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        {shelter.name} — תקלות
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
-        {entries.length} תיקונים
-      </p>
+    <PageLayout title={`${shelter.name} — תקלות`} subtitle={`${entries.length} תיקונים`} backTo="/dashboard/history/issues">
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
         <button onClick={() => setYear(year - 1)} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', fontSize: '16px', cursor: 'pointer' }}>«</button>
@@ -68,22 +60,23 @@ export default function HistoryIssueCalendar() {
               <button
                 onClick={() => hasData ? navigate(`/dashboard/history/issues/${shelter.id}/${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`) : null}
                 style={{
-                  width: '32px', height: '32px', borderRadius: '50%', border: 'none',
+                  width: '32px', height: '44px', borderRadius: '8px', border: 'none',
                   background: 'transparent',
                   color: hasData ? 'var(--color-text)' : 'var(--color-text-secondary)',
                   fontWeight: hasData ? 800 : 400, fontSize: '13px',
                   cursor: hasData ? 'pointer' : 'default',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 }}
-              >{day}</button>
-              <span style={{
-                width: '6px', height: '6px', borderRadius: '50%',
-                background: hasData ? 'var(--color-danger)' : 'var(--color-success)',
-              }} />
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span>{day}</span>
+                  {hasData && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-success)', marginTop: '2px' }} />}
+                </div>
+              </button>
             </div>
           )
         })}
       </div>
-    </div>
+    </PageLayout>
   )
 }

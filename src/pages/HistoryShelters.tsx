@@ -1,22 +1,15 @@
 import { useNavigate } from 'react-router-dom'
-import { regularShelters } from '../data/shelters'
+import { getRegularShelters } from '../data/shelters'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function HistoryShelters() {
   const navigate = useNavigate()
   const { shelterHistory } = useStore()
+  const regularShelters = getRegularShelters()
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton to="/dashboard/history" />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        🏛️ היסטוריית נוכחות במקלטים
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
-        סה"כ <span style={{ color: 'var(--color-accent)', fontWeight: 800 }}>{shelterHistory.length}</span> רישומים
-      </p>
+    <PageLayout title="🏛️ היסטוריית נוכחות במקלטים" subtitle={`סה"כ ${shelterHistory.length} רישומים`} backTo="/dashboard/history">
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {regularShelters.map(shelter => {
@@ -49,6 +42,6 @@ export default function HistoryShelters() {
           )
         })}
       </div>
-    </div>
+    </PageLayout>
   )
 }

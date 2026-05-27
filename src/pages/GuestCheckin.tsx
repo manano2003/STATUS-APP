@@ -28,6 +28,18 @@ export default function GuestCheckin() {
 
   const shelter = id ? getShelterById(id) : undefined
 
+  // Only מנהל מקלט / חמ"ל / ADMIN can register guests
+  const canRegisterGuests = currentUser && (
+    currentUser.roles.includes('מנהל מקלט') ||
+    currentUser.roles.includes('חמ"ל') ||
+    currentUser.roles.includes('ADMIN')
+  )
+
+  if (!currentUser || !canRegisterGuests) {
+    navigate('/report', { replace: true })
+    return null
+  }
+
   if (!shelter) {
     return (
       <div style={{ paddingTop: '100px', textAlign: 'center' }}>

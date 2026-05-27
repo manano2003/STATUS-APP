@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getKindergartenById } from '../data/kindergartens'
+import { getKindergartenById } from '../data/sourceData'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר']
 const DAYS_HE = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳']
@@ -38,12 +38,7 @@ export default function HistoryKindergartenCalendar() {
   }
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '400px', margin: '0 auto' }}>
-      <BackButton to="/dashboard/history/kindergartens" />
-
-      <h1 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '16px', textAlign: 'center' }}>
-        {kg.name} — היסטוריה
-      </h1>
+    <PageLayout title={`${kg.name} — היסטוריה`} backTo="/dashboard/history/kindergartens">
 
       {/* Year/Month selector */}
       <div style={{
@@ -106,22 +101,25 @@ export default function HistoryKindergartenCalendar() {
               key={day}
               onClick={() => hasData ? goToDay(day) : null}
               style={{
-                width: '36px', height: '36px', borderRadius: '50%',
+                width: '36px', height: '44px', borderRadius: '8px',
                 border: 'none',
-                background: hasData ? 'rgba(77, 166, 232, 0.2)' : 'transparent',
-                color: hasData ? 'var(--color-accent)' : 'var(--color-text-secondary)',
+                background: 'transparent',
+                color: hasData ? 'var(--color-text)' : 'var(--color-text-secondary)',
                 fontWeight: hasData ? 800 : 400,
                 fontSize: '13px',
                 cursor: hasData ? 'pointer' : 'default',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 margin: '0 auto',
               }}
             >
-              {day}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span>{day}</span>
+                {hasData && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-success)', marginTop: '2px' }} />}
+              </div>
             </button>
           )
         })}
       </div>
-    </div>
+    </PageLayout>
   )
 }

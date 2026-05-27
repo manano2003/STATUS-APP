@@ -6,6 +6,10 @@ interface ExportButtonsProps {
   getTableData?: () => { headers: string[]; rows: string[][] }
 }
 
+function sanitize(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 export default function ExportButtons({ title, getText, getTableData }: ExportButtonsProps) {
   const [showOptions, setShowOptions] = useState<'email' | 'whatsapp' | null>(null)
 
@@ -14,11 +18,11 @@ export default function ExportButtons({ title, getText, getTableData }: ExportBu
     const printWindow = window.open('', '_blank')
     if (printWindow) {
       printWindow.document.write(`
-        <html dir="rtl"><head><title>${title}</title>
+        <html dir="rtl"><head><title>${sanitize(title)}</title>
         <style>body{font-family:Arial;padding:40px;direction:rtl}
         h1{color:#0A1628;border-bottom:2px solid #4DA6E8;padding-bottom:10px}
         pre{white-space:pre-wrap;font-family:Arial;font-size:14px;line-height:1.8}</style></head>
-        <body><h1>${title}</h1><pre>${text}</pre>
+        <body><h1>${sanitize(title)}</h1><pre>${sanitize(text)}</pre>
         <script>window.print()<\/script></body></html>
       `)
       printWindow.document.close()

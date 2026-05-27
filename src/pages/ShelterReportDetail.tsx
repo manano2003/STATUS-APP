@@ -1,12 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { getShelterById, getTrafficLight } from '../data/shelters'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function ShelterReportDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { getShelterCheckins, getShelterPeopleCount, clearShelterCheckins } = useStore()
+  const { getShelterCheckins, getShelterPeopleCount } = useStore()
 
   const shelter = id ? getShelterById(id) : undefined
   if (!shelter) return <div style={{ paddingTop: '100px', textAlign: 'center' }}>מקלט לא נמצא</div>
@@ -16,19 +16,13 @@ export default function ShelterReportDetail() {
   const traffic = getTrafficLight(count)
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton to="/dashboard/shelters" />
+    <PageLayout title={shelter.name} subtitle={`מקלט ${shelter.number}`} backTo="/dashboard/shelters">
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
         <img src={shelter.imageUrl} alt={shelter.name}
           style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover' }} />
-        <div>
-          <h1 style={{ fontSize: '20px', fontWeight: 800, margin: 0 , textAlign: 'center'}}>{shelter.name}</h1>
-          <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '2px 0 0' , textAlign: 'center'}}>
-            מקלט {shelter.number}
-          </p>
-        </div>
-        <div style={{ marginRight: 'auto', textAlign: 'center' }}>
+        <div style={{ flex: 1 }} />
+        <div style={{ textAlign: 'center' }}>
           <span style={{
             padding: '3px 12px', borderRadius: '12px', fontSize: '12px',
             fontWeight: 700, color: traffic.color, background: traffic.bg,
@@ -111,28 +105,6 @@ export default function ShelterReportDetail() {
         )}
       </div>
 
-      <button
-        onClick={() => {
-          if (confirm(`האם לאפס את הנוכחות במקלט ${shelter.name}?`)) {
-            clearShelterCheckins(shelter.id)
-          }
-        }}
-        style={{
-          display: 'block',
-          width: '100%',
-          marginTop: '16px',
-          padding: '14px',
-          borderRadius: 'var(--radius)',
-          border: '1px solid rgba(232, 77, 77, 0.3)',
-          background: 'rgba(232, 77, 77, 0.08)',
-          color: 'var(--color-danger)',
-          fontSize: '14px',
-          fontWeight: 700,
-          cursor: 'pointer',
-        }}
-      >
-        איפוס נוכחות במקלט זה
-      </button>
-    </div>
+    </PageLayout>
   )
 }

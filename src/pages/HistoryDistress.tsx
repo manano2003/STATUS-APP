@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { distressTypes, getDistressTypeInfo } from '../data/distressTypes'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function HistoryDistress() {
   const navigate = useNavigate()
@@ -21,15 +21,7 @@ export default function HistoryDistress() {
     : []
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton to="/dashboard/history" />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        🆘 קריאות מצוקה — היסטוריה
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
-        סה"כ <span style={{ color: 'var(--color-danger)', fontWeight: 800 }}>{distressHistory.length}</span> קריאות טופלו
-      </p>
+    <PageLayout title="🆘 קריאות מצוקה — היסטוריה" subtitle={`סה"כ ${distressHistory.length} קריאות טופלו`} backTo="/dashboard/history">
 
       {/* Search */}
       <div style={{ marginBottom: '16px', position: 'relative' }}>
@@ -117,28 +109,37 @@ export default function HistoryDistress() {
                 key={type.id}
                 onClick={() => navigate(`/dashboard/history/distress/${type.id}`)}
                 style={{
-                  background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius)', padding: '20px 14px', cursor: 'pointer',
-                  textAlign: 'center', transition: 'border-color 0.2s',
+                  background: 'var(--color-bg-card)', border: '2px solid var(--color-border)',
+                  borderRadius: 'var(--radius)', padding: '0', cursor: 'pointer',
+                  overflow: 'hidden', textAlign: 'center', transition: 'all 0.2s ease',
                 }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-danger)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(77, 166, 232, 0.2)'}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = 'var(--color-danger)'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(232, 77, 77, 0.2)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = 'rgba(77, 166, 232, 0.2)'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
               >
-                <img src={type.imageUrl} alt={type.label}
-                  style={{
-                    width: '48px', height: '48px', objectFit: 'contain', margin: '0 auto 8px',
-                    ...(type.id === 'medical' ? { filter: 'invert(1)' } : {}),
-                  }} />
-                <p style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-text)', margin: '0 0 4px' }}>{type.label}</p>
-                <p style={{
-                  fontSize: '13px', fontWeight: 800, margin: 0,
-                  color: count > 0 ? 'var(--color-danger)' : 'var(--color-text-secondary)',
-                }}>{count} קריאות</p>
+                <div style={{ width: '100%', aspectRatio: '16 / 9', overflow: 'hidden' }}>
+                  <img src={type.imageUrl} alt={type.label}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
+                </div>
+                <div style={{ padding: '14px 8px' }}>
+                  <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-text)', margin: '0 0 4px' }}>{type.label}</p>
+                  <p style={{
+                    fontSize: '13px', fontWeight: 800, margin: 0,
+                    color: count > 0 ? 'var(--color-danger)' : 'var(--color-text-secondary)',
+                  }}>{count} קריאות</p>
+                </div>
               </button>
             )
           })}
         </div>
       )}
-    </div>
+    </PageLayout>
   )
 }

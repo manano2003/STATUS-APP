@@ -17,4 +17,15 @@ export const issueChecklist = [
   'תיק עזרה ראשונה',
 ]
 
+export function getIssueChecklist(): string[] {
+  try {
+    const saved = localStorage.getItem('source_issues')
+    if (saved) {
+      const list = JSON.parse(saved)
+      if (Array.isArray(list) && list.length > 0) return list
+    }
+  } catch {}
+  return issueChecklist
+}
+
 export const MAINTENANCE_PHONE = '502632940'

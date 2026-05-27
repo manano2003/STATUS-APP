@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom'
-import { clubs } from '../data/clubs'
+import { getSourceClubs } from '../data/sourceData'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function Clubs() {
   const navigate = useNavigate()
   const { getClubAttendance } = useStore()
+  const clubs = getSourceClubs()
 
   const totalPresent = clubs.reduce((sum, k) => {
     const att = getClubAttendance(k.id)
@@ -16,12 +17,7 @@ export default function Clubs() {
   const totalChildren = clubs.reduce((sum, k) => sum + k.children.length, 0)
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 80px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton />
-
-      <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        מועדונים
-      </h1>
+    <PageLayout title="מועדונים">
       <p style={{ color: 'var(--color-accent)', fontSize: '18px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
         נוכחים: {totalPresent} מתוך {totalChildren}
       </p>
@@ -72,6 +68,6 @@ export default function Clubs() {
           )
         })}
       </div>
-    </div>
+    </PageLayout>
   )
 }

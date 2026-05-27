@@ -1,24 +1,17 @@
 import { useNavigate } from 'react-router-dom'
-import { regularShelters } from '../data/shelters'
+import { getRegularShelters } from '../data/shelters'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function DashboardIssues() {
   const navigate = useNavigate()
   const { issueReports, getShelterIssues, clearAllIssueReports } = useStore()
+  const regularShelters = getRegularShelters()
 
   const totalIssues = issueReports.reduce((sum, r) => sum + r.issues.length, 0)
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton to="/dashboard/reports" />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' , justifyContent: 'center'}}>
-        <span>🔧</span> תקלות במקלטים
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px' , textAlign: 'center'}}>
-        סה"כ <span style={{ color: 'var(--color-danger)', fontWeight: 800 }}>{totalIssues}</span> תקלות בכלל המקלטים
-      </p>
+    <PageLayout title="🔧 תקלות במקלטים" subtitle={`סה"כ ${totalIssues} תקלות בכלל המקלטים`} backTo="/dashboard/reports">
 
       <div style={{
         background: 'var(--color-bg-card)',
@@ -88,6 +81,6 @@ export default function DashboardIssues() {
           מחק כלל התקלות
         </button>
       )}
-    </div>
+    </PageLayout>
   )
 }

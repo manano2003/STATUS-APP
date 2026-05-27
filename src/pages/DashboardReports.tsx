@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
-import { regularShelters, specialStatuses } from '../data/shelters'
+import { getRegularShelters, getSpecialStatuses } from '../data/shelters'
 
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 interface ReportCard {
   icon: string
@@ -17,6 +17,8 @@ export default function DashboardReports() {
   const navigate = useNavigate()
   const { checkins, getShelterPeopleCount, distressAlerts, issueReports } = useStore()
 
+  const regularShelters = getRegularShelters()
+  const specialStatuses = getSpecialStatuses()
   const totalPeople = [...regularShelters, ...specialStatuses].reduce((sum, s) => sum + getShelterPeopleCount(s.id), 0)
 
   const reports: ReportCard[] = [
@@ -26,20 +28,7 @@ export default function DashboardReports() {
   ]
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton to="/dashboard" />
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          width: '36px', height: '36px', borderRadius: '8px',
-          background: 'rgba(77, 232, 138, 0.15)', fontSize: '18px',
-        }}>📊</span>
-        <h1 style={{ fontSize: '22px', fontWeight: 800, margin: 0 , textAlign: 'center'}}>דוחות</h1>
-      </div>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '20px' , textAlign: 'center'}}>
-        {checkins.length} דיווחים | {totalPeople} נפשות במקלטים
-      </p>
+    <PageLayout title="📊 דוחות" subtitle={`${checkins.length} דיווחים | ${totalPeople} נפשות במקלטים`} backTo="/dashboard">
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {reports.map(card => (
@@ -86,6 +75,6 @@ export default function DashboardReports() {
           </button>
         ))}
       </div>
-    </div>
+    </PageLayout>
   )
 }

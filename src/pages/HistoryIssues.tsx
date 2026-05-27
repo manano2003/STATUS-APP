@@ -1,21 +1,23 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { regularShelters } from '../data/shelters'
-import { issueChecklist } from '../data/shelterIssues'
+import { getRegularShelters } from '../data/shelters'
+import { getIssueChecklist } from '../data/shelterIssues'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function HistoryIssues() {
   const navigate = useNavigate()
   const { issueHistory } = useStore()
+  const regularShelters = getRegularShelters()
   const [search, setSearch] = useState('')
   const [searchResult, setSearchResult] = useState<string | null>(null)
+  const currentIssueChecklist = getIssueChecklist()
 
   const formatDate = (ts: number) =>
     new Date(ts).toLocaleString('he-IL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
 
   const matchingIssues = search.trim()
-    ? issueChecklist.filter(i => i.includes(search.trim()))
+    ? currentIssueChecklist.filter(i => i.includes(search.trim()))
     : []
 
   const searchResults = searchResult
@@ -23,15 +25,7 @@ export default function HistoryIssues() {
     : []
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton to="/dashboard/history" />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        🔧 תקלות שתוקנו
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
-        סה"כ <span style={{ color: 'var(--color-accent)', fontWeight: 800 }}>{issueHistory.length}</span> תקלות תוקנו
-      </p>
+    <PageLayout title="🔧 תקלות שתוקנו" subtitle={`סה"כ ${issueHistory.length} תקלות תוקנו`} backTo="/dashboard/history">
 
       {/* Search */}
       <div style={{ marginBottom: '16px', position: 'relative' }}>
@@ -140,6 +134,6 @@ export default function HistoryIssues() {
           })}
         </div>
       )}
-    </div>
+    </PageLayout>
   )
 }

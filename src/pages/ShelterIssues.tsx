@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { regularShelters } from '../data/shelters'
-import { issueChecklist, MAINTENANCE_PHONE } from '../data/shelterIssues'
+import { getRegularShelters } from '../data/shelters'
+import { getIssueChecklist, MAINTENANCE_PHONE } from '../data/shelterIssues'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 import Button from '../components/Button'
 
 export default function ShelterIssues() {
@@ -10,6 +10,8 @@ export default function ShelterIssues() {
   const [selectedShelter, setSelectedShelter] = useState<string | null>(null)
   const [checkedIssues, setCheckedIssues] = useState<Set<string>>(new Set())
   const [submitted, setSubmitted] = useState(false)
+  const regularShelters = getRegularShelters()
+  const currentIssueChecklist = getIssueChecklist()
 
   const shelter = regularShelters.find(s => s.id === selectedShelter)
 
@@ -77,12 +79,7 @@ export default function ShelterIssues() {
   // Step 1: Choose shelter
   if (!selectedShelter) {
     return (
-      <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '500px', margin: '0 auto' }}>
-        <BackButton />
-        <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '8px' , textAlign: 'center'}}>תקלות במקלטים</h1>
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px' , textAlign: 'center'}}>
-          בחר מקלט לדיווח תקלות
-        </p>
+      <PageLayout title="תקלות במקלטים" subtitle="בחר מקלט לדיווח תקלות">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {regularShelters.map(s => (
             <button
@@ -103,21 +100,28 @@ export default function ShelterIssues() {
             </button>
           ))}
         </div>
-      </div>
+      </PageLayout>
     )
   }
 
   // Step 2: Checklist
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '500px', margin: '0 auto' }}>
-      <BackButton to="/shelter-issues" />
+    <PageLayout title={`${shelter?.name} — מקלט ${shelter?.number}`} subtitle="סמן את התקלות שנמצאו">
 
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px' , textAlign: 'center'}}>
-        {shelter?.name} — מקלט {shelter?.number}
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px' , textAlign: 'center'}}>
-        סמן את התקלות שנמצאו
-      </p>
+      {checkedIssues.size === 0 && (
+        <button
+          onClick={() => { setSelectedShelter(null); setCheckedIssues(new Set()); setSubmitted(false) }}
+          style={{
+            position: 'fixed', top: 60, left: 16, zIndex: 9999,
+            background: 'rgba(77, 166, 232, 0.15)', border: 'none',
+            color: 'var(--color-accent)', fontSize: '14px', fontWeight: 800,
+            cursor: 'pointer', padding: '4px 10px', borderRadius: '6px',
+            display: 'flex', alignItems: 'center', gap: '4px',
+          }}
+        >
+          ← חזרה
+        </button>
+      )}
 
       <div style={{
         background: 'var(--color-bg-card)',
@@ -126,7 +130,7 @@ export default function ShelterIssues() {
         overflow: 'hidden',
         marginBottom: '16px',
       }}>
-        {issueChecklist.map((issue, i) => {
+        {currentIssueChecklist.map((issue, i) => {
           const checked = checkedIssues.has(issue)
           return (
             <div
@@ -135,7 +139,7 @@ export default function ShelterIssues() {
               style={{
                 display: 'flex', alignItems: 'center', gap: '12px',
                 padding: '12px 14px',
-                borderBottom: i < issueChecklist.length - 1 ? '1px solid var(--color-border)' : 'none',
+                borderBottom: i < currentIssueChecklist.length - 1 ? '1px solid var(--color-border)' : 'none',
                 cursor: 'pointer',
                 background: checked ? 'rgba(232, 77, 77, 0.05)' : 'transparent',
               }}
@@ -173,6 +177,6 @@ export default function ShelterIssues() {
       >
         שלח רשימת תקלות
       </Button>
-    </div>
+    </PageLayout>
   )
 }

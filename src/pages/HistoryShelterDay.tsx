@@ -1,11 +1,13 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { getShelterById } from '../data/shelters'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import { supabase } from '../data/supabase'
+import PageLayout from '../components/PageLayout'
 
 export default function HistoryShelterDay() {
   const { id, date } = useParams<{ id: string; date: string }>()
-  const { shelterHistory } = useStore()
+  const navigate = useNavigate()
+  const { shelterHistory, removeShelterHistory, currentUser } = useStore()
 
   const shelter = id ? getShelterById(id) : undefined
   const snapshot = shelterHistory.find(s => s.shelterId === id && s.date === date)
@@ -19,16 +21,23 @@ export default function HistoryShelterDay() {
 
   const totalPeople = snapshot?.checkins.reduce((sum, c) => sum + c.peopleCount, 0) ?? 0
 
-  return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '500px', margin: '0 auto' }}>
-      <BackButton to={`/dashboard/history/shelters/${shelter.id}`} />
+  const isAdmin = currentUser?.roles.includes('ADMIN') || currentUser?.roles.includes('חמ"ל')
 
-      <h1 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        {shelter.name}
-      </h1>
-      <p style={{ color: 'var(--color-accent)', fontSize: '16px', fontWeight: 700, marginBottom: '4px', textAlign: 'center' }}>
-        {date ? formatDate(date) : ''}
-      </p>
+  const handleDelete = async () => {
+    if (!snapshot || !currentUser) return
+    if (!confirm('האם למחוק רישום זה מההיסטוריה?')) return
+    const { data } = await supabase.rpc('secure_delete_shelter_history', {
+      caller_id: currentUser.id,
+      history_id: snapshot.id,
+    })
+    if (data?.success) {
+      removeShelterHistory(snapshot.id)
+      navigate(`/dashboard/history/shelters/${id}`)
+    }
+  }
+
+  return (
+    <PageLayout title={shelter.name} subtitle={date ? formatDate(date) : ''} backTo={`/dashboard/history/shelters/${shelter.id}`}>
       <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
         {snapshot ? `${snapshot.checkins.length} נרשמו | ${totalPeople} נפשות` : 'אין נתונים ליום זה'}
       </p>
@@ -88,6 +97,21 @@ export default function HistoryShelterDay() {
           </>
         )}
       </div>
-    </div>
+
+      {isAdmin && snapshot && (
+        <button
+          onClick={handleDelete}
+          style={{
+            display: 'block', width: '100%', marginTop: '16px', padding: '14px',
+            borderRadius: 'var(--radius)',
+            border: '1px solid rgba(232, 77, 77, 0.3)',
+            background: 'rgba(232, 77, 77, 0.08)',
+            color: 'var(--color-danger)', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+          }}
+        >
+          מחק רישום
+        </button>
+      )}
+    </PageLayout>
   )
 }

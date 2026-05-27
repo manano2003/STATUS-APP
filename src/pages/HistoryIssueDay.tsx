@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { getShelterById } from '../data/shelters'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function HistoryIssueDay() {
   const { id, date } = useParams<{ id: string; date: string }>()
@@ -19,13 +19,7 @@ export default function HistoryIssueDay() {
   const formatDate = (d: string) => { const p = d.split('-'); return `${p[2]}/${p[1]}/${p[0]}` }
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '500px', margin: '0 auto' }}>
-      <BackButton to={`/dashboard/history/issues/${shelter.id}`} />
-
-      <h1 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>{shelter.name}</h1>
-      <p style={{ color: 'var(--color-accent)', fontSize: '16px', fontWeight: 700, marginBottom: '4px', textAlign: 'center' }}>
-        {date ? formatDate(date) : ''}
-      </p>
+    <PageLayout title={shelter.name} subtitle={date ? formatDate(date) : ''} backTo={`/dashboard/history/issues/${shelter.id}`}>
       <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
         {entries.length} תקלות תוקנו
       </p>
@@ -60,6 +54,6 @@ export default function HistoryIssueDay() {
           </>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

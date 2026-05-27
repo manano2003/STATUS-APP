@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { getKindergartenById } from '../data/kindergartens'
+import { getKindergartenById } from '../data/sourceData'
 import { useStore } from '../data/store'
 import Button from '../components/Button'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function KindergartenCheckin() {
   const { id } = useParams<{ id: string }>()
@@ -13,7 +13,11 @@ export default function KindergartenCheckin() {
   if (!kg) return <div style={{ paddingTop: '100px', textAlign: 'center' }}>גן לא נמצא</div>
 
   const existing = getKindergartenAttendance(kg.id)
-  const [checked, setChecked] = useState<Set<string>>(new Set(existing?.presentChildren ?? []))
+  // If attendance already saved today, use it. Otherwise auto-check all children (not staff)
+  const [checked, setChecked] = useState<Set<string>>(() => {
+    if (existing) return new Set(existing.presentChildren)
+    return new Set(kg.children)
+  })
   const [saved, setSaved] = useState(false)
 
   const toggle = (name: string) => {
@@ -37,12 +41,7 @@ export default function KindergartenCheckin() {
   }
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 80px', maxWidth: '500px', margin: '0 auto' }}>
-      <BackButton to="/kindergartens" />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        {kg.name}
-      </h1>
+    <PageLayout title={kg.name} backTo="/kindergartens">
       {(() => {
         const presentKids = kg.children.filter(c => checked.has(c)).length
         const pct = kg.children.length > 0 ? Math.round((presentKids / kg.children.length) * 100) : 0
@@ -179,6 +178,6 @@ export default function KindergartenCheckin() {
       >
         מחק נוכחות
       </button>
-    </div>
+    </PageLayout>
   )
 }

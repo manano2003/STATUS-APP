@@ -1,39 +1,39 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
+import { hasPermission } from '../data/permissions'
 
 interface NavItem {
   path: string
   label: string
   icon: string
-  adminOnly?: boolean
+  feature: string
 }
 
-const navItems: NavItem[] = [
-  { path: '/report', label: 'מקלטים', icon: '🏛️' },
-  { path: '/kindergartens', label: 'גני ילדים', icon: '👶' },
-  { path: '/clubs', label: 'מועדונים', icon: '⚽' },
-  { path: '/shelter-issues', label: 'תקלות במקלטים', icon: '🔧' },
-  { path: '/emergency-status', label: 'עדכון תושבים', icon: '🚨' },
-  { path: '/dashboard', label: 'חמ"ל', icon: '📊' },
-  { path: '/admin/users', label: 'ניהול משתמשים', icon: '👥', adminOnly: true },
-  { path: '/admin/shelters', label: 'סיכום מקלטים', icon: '📋', adminOnly: true },
+const allNavItems: NavItem[] = [
+  { path: '/report', label: 'מקלטים', icon: '🏛️', feature: 'report' },
+  { path: '/kindergartens', label: 'גני ילדים', icon: '👶', feature: 'kindergartens' },
+  { path: '/clubs', label: 'מועדונים', icon: '⚽', feature: 'clubs' },
+  { path: '/shelter-issues', label: 'תקלות במקלטים', icon: '🔧', feature: 'shelter-issues' },
+  { path: '/emergency-status', label: 'עדכון תושבים', icon: '🚨', feature: 'emergency-status' },
+  { path: '/dashboard', label: 'חמ"ל', icon: '📊', feature: 'dashboard' },
 ]
 
 export default function Header() {
   const location = useLocation()
   const navigate = useNavigate()
   const { currentUser, setCurrentUser, distressAlerts } = useStore()
-  const isAdmin = currentUser?.roles.includes('ADMIN') ?? false
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const visibleItems = navItems.filter(item => !item.adminOnly || isAdmin)
+  const visibleItems = currentUser
+    ? allNavItems.filter(item => hasPermission(currentUser.roles, item.feature))
+    : allNavItems
 
   return (
     <>
       <header style={{
         position: 'fixed',
-        top: 'var(--banner-height, 0px)',
+        top: 0,
         right: 0,
         left: 0,
         zIndex: 100,
@@ -57,8 +57,11 @@ export default function Header() {
           {menuOpen ? '✕' : '☰'}
         </button>
 
-        {/* Logo center */}
-        <Link to="/report" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}
+        {/* Logo center - absolute positioned for true center */}
+        <Link to="/report" style={{
+          position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0',
+        }}
           onClick={() => setMenuOpen(false)}>
           <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-text)', letterSpacing: '3px' }}>
             STATUS
@@ -68,24 +71,26 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* SOS button */}
-        <button
-          className={distressAlerts.length > 0 ? 'sos-blink' : ''}
-          onClick={() => { setMenuOpen(false); navigate('/distress') }}
-          style={{
-            background: 'rgba(232, 77, 77, 0.2)',
-            border: '2px solid var(--color-danger)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '6px 14px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 800,
-            color: 'var(--color-danger)',
-            letterSpacing: '1px',
-          }}
-        >
-          SOS
-        </button>
+        {/* SOS button - hidden on admin pages */}
+        {!location.pathname.startsWith('/communities') && !location.pathname.startsWith('/admin/management') && !location.pathname.startsWith('/schools') ? (
+          <button
+            className={distressAlerts.length > 0 ? 'sos-blink' : ''}
+            onClick={() => { setMenuOpen(false); navigate('/distress') }}
+            style={{
+              background: 'rgba(232, 77, 77, 0.2)',
+              border: '2px solid var(--color-danger)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '6px 14px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 800,
+              color: 'var(--color-danger)',
+              letterSpacing: '1px',
+            }}
+          >
+            SOS
+          </button>
+        ) : <div style={{ width: '58px' }} />}
       </header>
 
       {/* Navigation Menu */}
@@ -93,7 +98,7 @@ export default function Header() {
         <div
           style={{
             position: 'fixed',
-            top: 'calc(56px + var(--banner-height, 0px))',
+            top: '56px',
             right: 0,
             left: 0,
             bottom: 0,
@@ -120,7 +125,7 @@ export default function Header() {
                   {currentUser.city} | +972{currentUser.phone}
                 </p>
                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
-                  {currentUser.roles.map(r => (
+                  {currentUser.roles.filter(r => r !== 'USR').map(r => (
                     <span key={r} style={{
                       padding: '1px 8px', borderRadius: '10px', fontSize: '9px', fontWeight: 700,
                       background: r === 'ADMIN' ? 'rgba(232, 77, 77, 0.15)' : 'rgba(77, 166, 232, 0.1)',
@@ -177,21 +182,31 @@ export default function Header() {
             >
               <span style={{ fontSize: '20px' }}>{item.icon}</span>
               {item.label}
-              {item.adminOnly && (
-                <span style={{
-                  marginRight: 'auto',
-                  fontSize: '10px',
-                  padding: '1px 6px',
-                  borderRadius: '8px',
-                  background: 'rgba(232, 77, 77, 0.15)',
-                  color: 'var(--color-danger)',
-                  fontWeight: 700,
-                }}>
-                  ADMIN
-                </span>
-              )}
             </Link>
           ))}
+
+          {/* Admin link */}
+          {currentUser?.roles.includes('ADMIN') && (
+            <button
+              onClick={() => {
+                setMenuOpen(false)
+                navigate('/communities')
+              }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '12px',
+                padding: '14px 16px', width: '100%',
+                fontSize: '15px', fontWeight: 600,
+                color: 'var(--color-accent)',
+                background: 'none', border: 'none', cursor: 'pointer',
+                borderTop: '1px solid var(--color-border)',
+                marginTop: '8px',
+                textAlign: 'right',
+              }}
+            >
+              <span style={{ fontSize: '20px' }}>⚙️</span>
+              חזור לדף מנהל
+            </button>
+          )}
 
           {/* Logout at bottom */}
           {currentUser && (
@@ -208,7 +223,6 @@ export default function Header() {
                 color: 'var(--color-danger)',
                 background: 'none', border: 'none', cursor: 'pointer',
                 borderTop: '1px solid var(--color-border)',
-                marginTop: '8px',
                 textAlign: 'right',
               }}
             >

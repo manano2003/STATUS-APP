@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
-import { getClubById } from '../data/clubs'
+import { getClubById } from '../data/sourceData'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function HistoryClubDay() {
   const { id, date } = useParams<{ id: string; date: string }>()
@@ -18,15 +18,7 @@ export default function HistoryClubDay() {
   }
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '500px', margin: '0 auto' }}>
-      <BackButton to={`/dashboard/history/clubs/${club.id}`} />
-
-      <h1 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        {club.name}
-      </h1>
-      <p style={{ color: 'var(--color-accent)', fontSize: '16px', fontWeight: 700, marginBottom: '4px', textAlign: 'center' }}>
-        {date ? formatDate(date) : ''}
-      </p>
+    <PageLayout title={club.name} subtitle={date ? formatDate(date) : ''} backTo={`/dashboard/history/clubs/${club.id}`}>
       <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
         {snapshot ? `${snapshot.presentChildren.length} נוכחים` : 'אין נתונים ליום זה'}
       </p>
@@ -117,6 +109,6 @@ export default function HistoryClubDay() {
           לא דווחה נוכחות ביום זה
         </div>
       )}
-    </div>
+    </PageLayout>
   )
 }

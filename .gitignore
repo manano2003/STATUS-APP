@@ -7,3 +7,4 @@ ios
 .DS_Store
 *.pem
 src/assets/distress/FOURTROOP/
+.env

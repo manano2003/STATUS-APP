@@ -1,113 +1,21 @@
 import type { DistressType } from './store'
+import { supabase } from './supabase'
 
 export interface EmergencyContact {
   name: string
   phone: string
 }
 
-export const emergencyContacts: Record<DistressType, EmergencyContact[]> = {
-  medical: [
-    { name: 'נני בנעט', phone: '0507710666' },
-    { name: 'דנית כוחן', phone: '0544347124' },
-    { name: 'קרו כוחן', phone: '0542515511' },
-    { name: 'איילת עציוני', phone: '0507734982' },
-    { name: 'תמר גל עציוני', phone: '0534200633' },
-    { name: 'עוז וולף', phone: '0524235373' },
-    { name: 'מור יורה', phone: '0506575587' },
-    { name: 'רונית לוין', phone: '0507966635' },
-    { name: 'מירב שביט', phone: '0522875787' },
-    { name: 'שרי מימון', phone: '0523253588' },
-    { name: 'אוסי בר גיא', phone: '0507286598' },
-    { name: 'יעלה לוי', phone: '0507437773' },
-    { name: 'רונית שפירא', phone: '0507214415' },
-    { name: 'רותם בן ברוך', phone: '0507615236' },
-    { name: 'אריה פורת', phone: '0528809238' },
-    { name: 'חגי צור', phone: '0542886515' },
-    { name: 'חנן דהן', phone: '0507509357' },
-    { name: 'אייל שובל', phone: '0505752042' },
-    { name: 'אסף צור', phone: '0507759277' },
-    { name: 'שניר יורה', phone: '0507492556' },
-    { name: 'חורחה לרנר', phone: '0507591891' },
-    { name: 'סטיב הרמן', phone: '0507957071' },
-    { name: 'רז ספיר', phone: '0525164100' },
-    { name: 'עמירם קסוס', phone: '0502023720' },
-    { name: 'מיכל גרזון', phone: '0507286689' },
-  ],
-  fire: [
-    { name: 'דודו אברג׳ל', phone: '0502632940' },
-    { name: 'גיא סקין', phone: '0507605457' },
-    { name: 'אמיר ווילדר', phone: '0547650838' },
-    { name: 'אסף ווסר', phone: '0522025777' },
-    { name: 'אסף צור', phone: '0507759277' },
-    { name: 'גלעד אנסל', phone: '0507272064' },
-    { name: 'דני לוצוף', phone: '0502822320' },
-    { name: 'חגי צור', phone: '0542886515' },
-    { name: 'יותם אלפיה', phone: '0504849096' },
-    { name: 'סיוון מרדוק', phone: '0506822326' },
-    { name: 'עידן פרימרק', phone: '0505486471' },
-    { name: 'רם שגיא', phone: '0547373363' },
-    { name: 'דניאל אופנר', phone: '0547118586' },
-    { name: 'יריב שגיא', phone: '0545511513' },
-    { name: 'עומר לוי', phone: '0505388340' },
-  ],
-  missile: [
-    { name: 'דודו אברג׳ל', phone: '0502632940' },
-    { name: 'גיא סקין', phone: '0507605457' },
-    { name: 'יותם אלפיה', phone: '0504849096' },
-    { name: 'רם שגיא', phone: '0547373363' },
-    { name: 'יניב שחר', phone: '0542895135' },
-    { name: 'יואב ספא', phone: '0507481027' },
-    { name: 'אורן סלע', phone: '0507353135' },
-    { name: 'מתן קורנר', phone: '0547886556' },
-    { name: 'אסף שנטל', phone: '0533013849' },
-    { name: 'אופיר אייזן', phone: '0504042706' },
-    { name: 'עידן פרימרק', phone: '0505486471' },
-    { name: 'אמיר ווילדר', phone: '0547650838' },
-    { name: 'שרון ארצי', phone: '0544675753' },
-    { name: 'שניר יורה', phone: '0507492556' },
-    { name: 'דני לוצוף', phone: '0502822320' },
-    { name: 'מיכל שגיא', phone: '0502036290' },
-    { name: 'שאול לפידות', phone: '0526125063' },
-    { name: 'סיוון מרדוק', phone: '0506822325' },
-    { name: 'חנן דהן', phone: '0507509357' },
-    { name: 'יותם גולן', phone: '0509198161' },
-    { name: 'אסף סולומון', phone: '0507977088' },
-    { name: 'אמיר שוהם', phone: '0506766723' },
-    { name: 'רדי גבאי', phone: '0522322870' },
-    { name: 'אסף עמית', phone: '0537761769' },
-    { name: 'אייל ברוש', phone: '0544255633' },
-    { name: 'איתמר רייזנר', phone: '0544919040' },
-    { name: 'דניאל אופנר', phone: '0547118586' },
-    { name: 'טל דמבינסקי', phone: '0528682988' },
-  ],
-  terror: [
-    { name: 'דודו אברג׳ל', phone: '0502632940' },
-    { name: 'גיא סקין', phone: '0507605457' },
-    { name: 'יותם אלפיה', phone: '0504849096' },
-    { name: 'רם שגיא', phone: '0547373363' },
-    { name: 'יניב שחר', phone: '0542895135' },
-    { name: 'יואב ספא', phone: '0507481027' },
-    { name: 'אורן סלע', phone: '0507353135' },
-    { name: 'מתן קורנר', phone: '0547886556' },
-    { name: 'אסף שנטל', phone: '0533013849' },
-    { name: 'אופיר אייזן', phone: '0504042706' },
-    { name: 'עידן פרימרק', phone: '0505486471' },
-    { name: 'אמיר ווילדר', phone: '0547650838' },
-    { name: 'שרון ארצי', phone: '0544675753' },
-    { name: 'שניר יורה', phone: '0507492556' },
-    { name: 'דני לוצוף', phone: '0502822320' },
-    { name: 'מיכל שגיא', phone: '0502036290' },
-    { name: 'שאול לפידות', phone: '0526125063' },
-    { name: 'סיוון מרדוק', phone: '0506822325' },
-    { name: 'חנן דהן', phone: '0507509357' },
-    { name: 'יותם גולן', phone: '0509198161' },
-    { name: 'אסף סולומון', phone: '0507977088' },
-    { name: 'אמיר שוהם', phone: '0506766723' },
-    { name: 'רדי גבאי', phone: '0522322870' },
-    { name: 'אסף עמית', phone: '0537761769' },
-    { name: 'אייל ברוש', phone: '0544255633' },
-    { name: 'איתמר רייזנר', phone: '0544919040' },
-    { name: 'דניאל אופנר', phone: '0547118586' },
-    { name: 'טל דמבינסקי', phone: '0528682988' },
-  ],
+export async function loadEmergencyContacts(): Promise<Record<DistressType, EmergencyContact[]>> {
+  const { data } = await supabase.from('emergency_contacts').select('name,role,phone')
+  const result: Record<DistressType, EmergencyContact[]> = { medical: [], fire: [], missile: [], terror: [] }
+  if (data) {
+    data.forEach(c => {
+      const type = c.role as DistressType
+      if (result[type]) result[type].push({ name: c.name, phone: c.phone })
+    })
+  }
+  return result
 }
+
+export const emergencyContacts: Record<DistressType, EmergencyContact[]> = { medical: [], fire: [], missile: [], terror: [] }

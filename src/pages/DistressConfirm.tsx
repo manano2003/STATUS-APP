@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getDistressTypeInfo } from '../data/distressTypes'
-import { emergencyContacts } from '../data/emergencyContacts'
+import { loadEmergencyContacts, type EmergencyContact } from '../data/emergencyContacts'
 import { useStore, type DistressType } from '../data/store'
 import Button from '../components/Button'
 import BackButton from '../components/BackButton'
@@ -11,6 +11,9 @@ export default function DistressConfirm() {
   const navigate = useNavigate()
   const { currentUser, addDistressAlert } = useStore()
   const [submitted, setSubmitted] = useState(false)
+  const [emergencyContacts, setEmergencyContacts] = useState<Record<DistressType, EmergencyContact[]>>({ medical: [], fire: [], missile: [], terror: [] })
+
+  useEffect(() => { loadEmergencyContacts().then(setEmergencyContacts) }, [])
 
   const typeInfo = type ? getDistressTypeInfo(type as DistressType) : undefined
 

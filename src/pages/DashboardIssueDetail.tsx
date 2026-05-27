@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { getShelterById } from '../data/shelters'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function DashboardIssueDetail() {
   const { id } = useParams<{ id: string }>()
@@ -13,17 +13,9 @@ export default function DashboardIssueDetail() {
   if (!shelter) return <div style={{ paddingTop: '100px', textAlign: 'center' }}>מקלט לא נמצא</div>
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '500px', margin: '0 auto' }}>
-      <BackButton to="/dashboard/issues" />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px' , textAlign: 'center'}}>
-        {shelter.name} — מקלט {shelter.number}
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '4px' , textAlign: 'center'}}>
-        תקלות במקלט
-      </p>
+    <PageLayout title={`${shelter.name} — מקלט ${shelter.number}`} subtitle="תקלות במקלט" backTo="/dashboard/issues">
       <p style={{
-        fontSize: '16px', fontWeight: 800, marginBottom: '16px',
+        fontSize: '16px', fontWeight: 800, marginBottom: '16px', textAlign: 'center',
         color: report && report.issues.length > 0 ? 'var(--color-danger)' : 'var(--color-success)',
       }}>
         {report?.issues.length ?? 0} תקלות
@@ -74,6 +66,6 @@ export default function DashboardIssueDetail() {
           </>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

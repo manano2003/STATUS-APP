@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
 import Button from '../components/Button'
 import logo from '../assets/logo.jpeg'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
@@ -27,7 +27,7 @@ const labelStyle: React.CSSProperties = {
 
 export default function Profile() {
   const navigate = useNavigate()
-  const { currentUser, setCurrentUser, users } = useStore()
+  const { currentUser, setCurrentUser, updateUser } = useStore()
 
   const [fullName, setFullName] = useState(currentUser?.fullName ?? '')
   const [phone, setPhone] = useState(currentUser?.phone ?? '')
@@ -42,11 +42,10 @@ export default function Profile() {
     return null
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const updated = { ...currentUser, fullName, phone, city, street, houseNumber, residents }
+    await updateUser(updated)
     setCurrentUser(updated)
-    const idx = users.findIndex(u => u.id === currentUser.id)
-    if (idx >= 0) users[idx] = updated
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -59,13 +58,7 @@ export default function Profile() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '72px 24px 24px',
-    }}>
+    <PageLayout title="אזור אישי">
       <div style={{
         width: '100%',
         maxWidth: '440px',
@@ -74,12 +67,11 @@ export default function Profile() {
         border: '1px solid var(--color-border)',
         padding: '32px 24px',
         boxShadow: 'var(--shadow-glow)',
+        margin: '0 auto',
       }}>
-        <BackButton />
 
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <img src={logo} alt="STATUS" style={{ width: '80px', borderRadius: '10px', margin: '0 auto 12px' }} />
-          <h1 style={{ fontSize: '20px', fontWeight: 800 , textAlign: 'center'}}>אזור אישי</h1>
         </div>
 
         <form onSubmit={e => { e.preventDefault(); handleSave() }}
@@ -156,6 +148,6 @@ export default function Profile() {
           התנתקות
         </button>
       </div>
-    </div>
+    </PageLayout>
   )
 }

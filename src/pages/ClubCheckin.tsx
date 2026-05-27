@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { getClubById } from '../data/clubs'
+import { getClubById } from '../data/sourceData'
 import { useStore } from '../data/store'
 import Button from '../components/Button'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function ClubCheckin() {
   const { id } = useParams<{ id: string }>()
@@ -13,7 +13,10 @@ export default function ClubCheckin() {
   if (!club) return <div style={{ paddingTop: '100px', textAlign: 'center' }}>מועדון לא נמצא</div>
 
   const existing = getClubAttendance(club.id)
-  const [checked, setChecked] = useState<Set<string>>(new Set(existing?.presentChildren ?? []))
+  const [checked, setChecked] = useState<Set<string>>(() => {
+    if (existing) return new Set(existing.presentChildren)
+    return new Set(club.children)
+  })
   const [saved, setSaved] = useState(false)
 
   const toggle = (name: string) => {
@@ -37,12 +40,7 @@ export default function ClubCheckin() {
   }
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 80px', maxWidth: '500px', margin: '0 auto' }}>
-      <BackButton to="/clubs" />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        {club.name}
-      </h1>
+    <PageLayout title={club.name} backTo="/clubs">
       {(() => {
         const presentKids = club.children.filter(c => checked.has(c)).length
         const pct = club.children.length > 0 ? Math.round((presentKids / club.children.length) * 100) : 0
@@ -179,6 +177,6 @@ export default function ClubCheckin() {
       >
         מחק נוכחות
       </button>
-    </div>
+    </PageLayout>
   )
 }

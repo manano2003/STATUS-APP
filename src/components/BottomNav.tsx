@@ -1,22 +1,33 @@
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useStore } from '../data/store'
+import { hasPermission } from '../data/permissions'
 
-const tabs = [
-  { path: '/report', label: 'מקלטים', icon: '🏛️' },
-  { path: '/kindergartens', label: 'גנים', icon: '👶', grayscale: true },
-  { path: '/clubs', label: 'מועדונים', icon: '⚽' },
-  { path: '/shelter-issues', label1: 'תקלות', label2: 'במקלטים', icon: '🔧' },
-  { path: '/emergency-status', label1: 'עדכון', label2: 'תושבים', icon: '🚨' },
-  { path: '/dashboard', label: 'חמ"ל', icon: '📊' },
+const allTabs = [
+  { path: '/report', label: 'מקלטים', icon: '🏛️', feature: 'report' },
+  { path: '/kindergartens', label: 'גנים', icon: '👶', feature: 'kindergartens' },
+  { path: '/clubs', label: 'מועדונים', icon: '⚽', feature: 'clubs' },
+  { path: '/shelter-issues', label1: 'תקלות', label2: 'במקלטים', icon: '🔧', feature: 'shelter-issues' },
+  { path: '/emergency-status', label1: 'עדכון', label2: 'תושבים', icon: '🚨', feature: 'emergency-status' },
+  { path: '/dashboard', label: 'חמ"ל', icon: '📊', feature: 'dashboard' },
 ]
 
 export default function BottomNav() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { currentUser } = useStore()
 
-  // Hide on login, register, dashboard pages
+  const tabs = currentUser
+    ? allTabs.filter(tab => hasPermission(currentUser.roles, tab.feature))
+    : allTabs
+
   if (
     location.pathname.startsWith('/login') ||
-    location.pathname.startsWith('/register')
+    location.pathname.startsWith('/register') ||
+    location.pathname.startsWith('/welcome') ||
+    location.pathname === '/communities' ||
+    location.pathname.startsWith('/communities/') ||
+    location.pathname.startsWith('/admin/management') ||
+    location.pathname.startsWith('/schools')
   ) return null
 
   return (
@@ -32,7 +43,7 @@ export default function BottomNav() {
       zIndex: 90,
     }}>
       {tabs.map(tab => {
-        const isActive = location.pathname === tab.path
+        const isActive = location.pathname === tab.path || location.pathname.startsWith(tab.path + '/')
         return (
           <button
             key={tab.path}
@@ -52,8 +63,8 @@ export default function BottomNav() {
           >
             <span style={{
               fontSize: '18px',
-              opacity: isActive ? 1 : 0.6,
-              ...('grayscale' in tab && tab.grayscale ? { filter: 'grayscale(1) contrast(1.2)' } : {}),
+              filter: isActive ? 'none' : 'grayscale(1)',
+              opacity: isActive ? 1 : 0.5,
             }}>
               {tab.icon}
             </span>

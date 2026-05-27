@@ -15,7 +15,6 @@
   --radius: 12px;
   --radius-sm: 8px;
   --shadow-glow: 0 0 20px rgba(77, 166, 232, 0.15);
-  --banner-height: 30px;
 }
 
 *, *::before, *::after {
@@ -36,7 +35,6 @@ body {
   direction: rtl;
   line-height: 1.6;
   min-height: 100vh;
-  padding-top: var(--banner-height);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

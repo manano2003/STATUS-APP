@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
-import { getKindergartenById } from '../data/kindergartens'
+import { getKindergartenById } from '../data/sourceData'
 import { useStore } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function HistoryKindergartenDay() {
   const { id, date } = useParams<{ id: string; date: string }>()
@@ -18,15 +18,7 @@ export default function HistoryKindergartenDay() {
   }
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '500px', margin: '0 auto' }}>
-      <BackButton to={`/dashboard/history/kindergartens/${kg.id}`} />
-
-      <h1 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        {kg.name}
-      </h1>
-      <p style={{ color: 'var(--color-accent)', fontSize: '16px', fontWeight: 700, marginBottom: '4px', textAlign: 'center' }}>
-        {date ? formatDate(date) : ''}
-      </p>
+    <PageLayout title={kg.name} subtitle={date ? formatDate(date) : ''} backTo={`/dashboard/history/kindergartens/${kg.id}`}>
       <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
         {snapshot ? `${snapshot.presentChildren.length} נוכחים` : 'אין נתונים ליום זה'}
       </p>
@@ -117,6 +109,6 @@ export default function HistoryKindergartenDay() {
           לא דווחה נוכחות ביום זה
         </div>
       )}
-    </div>
+    </PageLayout>
   )
 }

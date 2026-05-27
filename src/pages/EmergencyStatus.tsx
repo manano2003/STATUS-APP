@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { residents } from '../data/residents'
+import { loadResidents, type Resident } from '../data/residents'
 import { useStore, EMERGENCY_STATUS_LABELS, EMERGENCY_STATUS_COLORS, type EmergencyStatusType } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 import ExportButtons from '../components/ExportButtons'
 
 const PAGE_SIZE = 100
@@ -13,6 +13,9 @@ export default function EmergencyStatus() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
   const [filterStatus, setFilterStatus] = useState<EmergencyStatusType | 'pending' | null>(null)
+  const [residents, setResidents] = useState<Resident[]>([])
+
+  useEffect(() => { loadResidents().then(setResidents) }, [])
 
   const formatTime = (ts: number) =>
     ts ? new Date(ts).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) : '—'
@@ -41,15 +44,7 @@ export default function EmergencyStatus() {
   const pageResidents = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '600px', margin: '0 auto' }}>
-      <BackButton />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '4px', textAlign: 'center' }}>
-        עדכון תושבים
-      </h1>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '4px', textAlign: 'center' }}>
-        {emergencyStatuses.length}/{residents.length} עודכנו
-      </p>
+    <PageLayout title="עדכון תושבים" subtitle={`${emergencyStatuses.length}/${residents.length} עודכנו`}>
       <button
         onClick={() => { setFilterStatus(filterStatus === 'pending' ? null : 'pending'); setPage(0) }}
         style={{
@@ -239,6 +234,6 @@ export default function EmergencyStatus() {
           ניקוי כלל הסטטוסים
         </button>
       )}
-    </div>
+    </PageLayout>
   )
 }

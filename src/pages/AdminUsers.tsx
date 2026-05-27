@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../data/store'
 import Button from '../components/Button'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 export default function AdminUsers() {
   const { users, roles, updateUserRoles, addRole, removeRole } = useStore()
@@ -14,12 +14,7 @@ export default function AdminUsers() {
   )
 
   return (
-    <div style={{ paddingTop: '80px', padding: '80px 24px 24px', maxWidth: '1000px', margin: '0 auto' }}>
-      <BackButton />
-      <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px' , textAlign: 'center'}}>ניהול משתמשים</h1>
-      <p style={{ color: 'var(--color-text-secondary)', marginBottom: '24px' , textAlign: 'center'}}>
-        {users.length} משתמשים רשומים
-      </p>
+    <PageLayout title="ניהול משתמשים" subtitle={`${users.length} משתמשים רשומים`}>
 
       {/* Search */}
       <input
@@ -257,6 +252,6 @@ export default function AdminUsers() {
           ))}
         </div>
       )}
-    </div>
+    </PageLayout>
   )
 }

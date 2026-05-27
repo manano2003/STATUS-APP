@@ -1,7 +1,8 @@
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { residents } from '../data/residents'
+import { loadResidents, type Resident } from '../data/residents'
 import { useStore, EMERGENCY_STATUS_LABELS, EMERGENCY_STATUS_COLORS, type EmergencyStatusType } from '../data/store'
-import BackButton from '../components/BackButton'
+import PageLayout from '../components/PageLayout'
 
 const statuses: { type: EmergencyStatusType; icon: string }[] = [
   { type: 'located-healthy', icon: '✅' },
@@ -14,6 +15,9 @@ export default function ResidentStatus() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { currentUser, getResidentStatus, setResidentStatus, removeResidentStatus } = useStore()
+  const [residents, setResidents] = useState<Resident[]>([])
+
+  useEffect(() => { loadResidents().then(setResidents) }, [])
 
   const resident = residents.find(r => r.id === id)
   if (!resident) return <div style={{ paddingTop: '100px', textAlign: 'center' }}>תושב לא נמצא</div>
@@ -30,8 +34,7 @@ export default function ResidentStatus() {
   }
 
   return (
-    <div style={{ paddingTop: '68px', padding: '68px 16px 100px', maxWidth: '400px', margin: '0 auto' }}>
-      <BackButton to="/emergency-status" />
+    <PageLayout title={resident.name} backTo="/emergency-status">
 
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
         <div style={{
@@ -44,9 +47,6 @@ export default function ResidentStatus() {
         }}>
           {resident.name.charAt(0)}
         </div>
-        <h1 style={{ fontSize: '22px', fontWeight: 800, margin: '0 0 4px', textAlign: 'center' }}>
-          {resident.name}
-        </h1>
         {resident.phone && (
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', direction: 'ltr', textAlign: 'center' }}>
             {resident.phone}
@@ -121,6 +121,6 @@ export default function ResidentStatus() {
           איפוס סטטוס אישי
         </button>
       )}
-    </div>
+    </PageLayout>
   )
 }
