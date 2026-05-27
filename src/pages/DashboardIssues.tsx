@@ -81,6 +81,52 @@ export default function DashboardIssues() {
           מחק כלל התקלות
         </button>
       )}
+
+      {/* WhatsApp + Print */}
+      {totalIssues > 0 && (
+        <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+          <button onClick={() => {
+            let text = `*תקלות במקלטים*\nסה"כ: ${totalIssues} תקלות\n\n`
+            regularShelters.forEach(s => {
+              const report = getShelterIssues(s.id)
+              if (!report || report.issues.length === 0) return
+              text += `*${s.number}. ${s.name} (${report.issues.length}):*\n`
+              report.issues.forEach((issue, i) => { text += `  ${i + 1}. ${issue}\n` })
+              text += '\n'
+            })
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+          }} style={{
+            flex: 1, padding: '14px', borderRadius: 'var(--radius)',
+            border: '1px solid var(--color-success)', background: 'rgba(77, 232, 138, 0.08)',
+            color: 'var(--color-success)', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-family)',
+          }}>
+            <span style={{ fontSize: '18px' }}>💬</span> WhatsApp
+          </button>
+          <button onClick={() => {
+            let text = `תקלות במקלטים\nסה"כ: ${totalIssues} תקלות\n\n`
+            regularShelters.forEach(s => {
+              const report = getShelterIssues(s.id)
+              if (!report || report.issues.length === 0) return
+              text += `${s.number}. ${s.name} (${report.issues.length}):\n`
+              report.issues.forEach((issue, i) => { text += `  ${i + 1}. ${issue}\n` })
+              text += '\n'
+            })
+            const w = window.open('', '_blank')
+            if (w) {
+              w.document.write(`<html dir="rtl"><head><title>תקלות במקלטים</title><style>body{font-family:Arial;padding:40px;direction:rtl}h1{color:#0A1628;border-bottom:2px solid #4DA6E8;padding-bottom:10px}pre{white-space:pre-wrap;font-family:Arial;font-size:14px;line-height:1.8}</style></head><body><h1>תקלות במקלטים</h1><pre>${text}</pre><script>window.print()<\/script></body></html>`)
+              w.document.close()
+            }
+          }} style={{
+            flex: 1, padding: '14px', borderRadius: 'var(--radius)',
+            border: '1px solid var(--color-border)', background: 'var(--color-bg-card)',
+            color: 'var(--color-accent)', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-family)',
+          }}>
+            <span style={{ fontSize: '18px' }}>🖨️</span> הדפסה
+          </button>
+        </div>
+      )}
     </PageLayout>
   )
 }
