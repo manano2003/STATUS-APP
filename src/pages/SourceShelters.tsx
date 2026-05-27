@@ -3,7 +3,7 @@ import { type Shelter } from '../data/shelters'
 import { getSourceShelters, saveSourceShelters, saveSourceSheltersToDB } from '../data/sourceData'
 import { shelters as defaultShelters } from '../data/shelters'
 import { useStore } from '../data/store'
-import { supabase } from '../data/supabase'
+
 import PageLayout from '../components/PageLayout'
 import * as XLSX from 'xlsx'
 
@@ -19,7 +19,7 @@ export default function SourceShelters() {
   const [newIsSpecial, setNewIsSpecial] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
-  const [uploadingImageId, setUploadingImageId] = useState<string | null>(null)
+  const [_uploadingImageId, setUploadingImageId] = useState<string | null>(null)
 
   const pendingImageId = useRef<string | null>(null)
 

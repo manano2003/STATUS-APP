@@ -1,51 +1,98 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import SchoolHome from './SchoolHome'
+
+interface SchoolClass {
+  name: string
+  students: string[]
+}
+
+function loadClasses(schoolId: string): SchoolClass[] {
+  try { return JSON.parse(localStorage.getItem('school_classes_' + schoolId) || '[]') } catch { return [] }
+}
 
 export default function SchoolManagement() {
   const { schoolId } = useParams<{ schoolId: string }>()
   const navigate = useNavigate()
+  const [classes] = useState<SchoolClass[]>(() => loadClasses(schoolId || ''))
+  const [expandedClass, setExpandedClass] = useState<string | null>(null)
 
-  const reports = [
-    { icon: '📚', label: 'נוכחות בכיתות', desc: 'מצב נוכחות בזמן אמת', path: `/schools/${schoolId}/classes`, count: 0, countLabel: 'תלמידים' },
-  ]
+  const totalStudents = classes.reduce((sum, c) => sum + c.students.length, 0)
 
   return (
     <SchoolHome content={
       <>
-        {/* Reports */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {reports.map(card => (
-            <button
-              key={card.path}
-              onClick={() => navigate(card.path)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '14px',
-                padding: '16px', background: 'var(--color-bg-card)',
-                border: '1px solid var(--color-border)', borderRadius: 'var(--radius)',
-                cursor: 'pointer', textAlign: 'right', color: 'var(--color-text)',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-accent)'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(77, 166, 232, 0.2)'}
-            >
-              <span style={{ fontSize: '28px', width: '40px', textAlign: 'center', flexShrink: 0 }}>{card.icon}</span>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: '15px', fontWeight: 700, margin: '0 0 2px', textAlign: 'right' }}>{card.label}</p>
-                <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: 0, textAlign: 'right' }}>{card.desc}</p>
+        {/* Summary */}
+        <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', textAlign: 'center', marginBottom: '16px' }}>
+          {classes.length} כיתות | {totalStudents} תלמידים
+        </p>
+
+        {/* Classes grid */}
+        {classes.length > 0 ? (
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+            gap: '10px', marginBottom: '16px',
+          }}>
+            {classes.map(c => (
+              <button
+                key={c.name}
+                onClick={() => setExpandedClass(expandedClass === c.name ? null : c.name)}
+                style={{
+                  background: expandedClass === c.name ? 'rgba(77, 166, 232, 0.15)' : 'var(--color-bg-card)',
+                  border: `1px solid ${expandedClass === c.name ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                  borderRadius: 'var(--radius)',
+                  padding: '16px 8px',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <p style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-accent)', margin: '0 0 4px', textShadow: '0 0 8px rgba(77, 166, 232, 0.6)' }}>
+                  {c.name}
+                </p>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>
+                  {c.students.length} תלמידים
+                </p>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px' }}>
+            אין כיתות - העלה אקסל בטבלאות מקור
+          </p>
+        )}
+
+        {/* Expanded class - student list */}
+        {expandedClass && (() => {
+          const cls = classes.find(c => c.name === expandedClass)
+          if (!cls) return null
+          return (
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.06)',
+              borderRadius: 'var(--radius)',
+              border: '2px solid var(--color-accent)',
+              overflow: 'hidden',
+              marginBottom: '16px',
+            }}>
+              <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)', background: 'rgba(77, 166, 232, 0.05)', textAlign: 'center' }}>
+                <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--color-accent)' }}>
+                  כיתה {cls.name} ({cls.students.length})
+                </span>
               </div>
-              <div style={{ width: '50px', textAlign: 'center', flexShrink: 0 }}>
-                <span style={{
-                  fontSize: '20px', fontWeight: 800,
-                  color: card.count > 0 ? 'var(--color-danger)' : 'var(--color-success)',
-                }}>{card.count}</span>
-                <p style={{ fontSize: '9px', color: 'var(--color-text-secondary)', margin: '2px 0 0', textAlign: 'center' }}>{card.countLabel}</p>
-              </div>
-            </button>
-          ))}
-        </div>
+              {cls.students.map(student => (
+                <div key={student} style={{
+                  display: 'flex', alignItems: 'center', padding: '10px 14px',
+                  borderBottom: '1px solid var(--color-border)', fontSize: '13px',
+                }}>
+                  <span style={{ flex: 1 }}>{student}</span>
+                </div>
+              ))}
+            </div>
+          )
+        })()}
 
         {/* Quick access buttons */}
-        <div style={{ display: 'flex', gap: '10px', marginTop: '40px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '24px', flexWrap: 'wrap' }}>
           <button
             onClick={() => navigate(`/schools/${schoolId}/sources`)}
             style={{
