@@ -91,15 +91,23 @@ export default function SchoolManagement() {
                 <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 4px' }}>
                   {c.students.length} תלמידים
                 </p>
-                <p style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-accent)', margin: 0, textShadow: '0 0 8px rgba(77, 166, 232, 0.6)' }}>
-                  {(() => {
-                    try {
-                      const attendance = JSON.parse(localStorage.getItem(`school_attendance_${schoolId}_${c.name}_${new Date().toISOString().split('T')[0]}`) || '{}')
-                      const present = Object.values(attendance).filter(v => v === true).length
-                      return `${present} נוכחים`
-                    } catch { return '0 נוכחים' }
-                  })()}
-                </p>
+                {(() => {
+                  let present = 0
+                  try {
+                    const attendance = JSON.parse(localStorage.getItem(`school_attendance_${schoolId}_${c.name}_${new Date().toISOString().split('T')[0]}`) || '{}')
+                    present = Object.values(attendance).filter(v => v === true).length
+                  } catch {}
+                  const hasAttendance = present > 0
+                  return (
+                    <p style={{
+                      fontSize: '13px', fontWeight: 800, margin: 0,
+                      color: hasAttendance ? 'var(--color-success)' : 'var(--color-danger)',
+                      textShadow: hasAttendance ? '0 0 8px rgba(77, 232, 138, 0.6)' : '0 0 8px rgba(232, 77, 77, 0.6)',
+                    }}>
+                      {present} נוכחים
+                    </p>
+                  )
+                })()}
               </button>
             ))}
           </div>
