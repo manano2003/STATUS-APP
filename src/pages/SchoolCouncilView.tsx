@@ -10,9 +10,18 @@ const councils = [
   { id: 'mateh-yehuda', name: 'מטה יהודה', icon: '🏛️' },
 ]
 
+function loadCouncilLogos(): Record<string, string> {
+  try { return JSON.parse(localStorage.getItem('council_logos') || '{}') } catch { return {} }
+}
+function loadSchoolLogos(): Record<string, string> {
+  try { return JSON.parse(localStorage.getItem('school_logos') || '{}') } catch { return {} }
+}
+
 export default function SchoolCouncilView() {
   const [allSchools, setAllSchools] = useState<SchoolRecord[]>([])
   const [selectedCouncil, setSelectedCouncil] = useState<string | null>(null)
+  const councilLogos = loadCouncilLogos()
+  const schoolLogos = loadSchoolLogos()
   const [selectedSchool, setSelectedSchool] = useState<string | null>(null)
   const [classes, setClasses] = useState<SchoolClass[]>([])
   const [emergency, setEmergency] = useState<Record<string, string>>({})
@@ -193,7 +202,11 @@ export default function SchoolCouncilView() {
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
               >
-                <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>🏫</span>
+                {schoolLogos[school.id] ? (
+                  <img src={schoolLogos[school.id]} alt={school.name} style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', display: 'block', margin: '0 auto 12px' }} />
+                ) : (
+                  <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>🏫</span>
+                )}
                 <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text)' }}>{school.name}</span>
               </button>
             ))}
@@ -223,7 +236,11 @@ export default function SchoolCouncilView() {
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
             >
-              <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>{c.icon}</span>
+              {councilLogos[c.id] ? (
+                <img src={councilLogos[c.id]} alt={c.name} style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', display: 'block', margin: '0 auto 12px' }} />
+              ) : (
+                <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>{c.icon}</span>
+              )}
               <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text)' }}>{c.name}</span>
             </button>
           ))}
