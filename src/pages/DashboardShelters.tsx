@@ -294,15 +294,24 @@ export default function DashboardShelters() {
         title="דוח נוכחות במקלטים"
         getText={() => {
           let text = `סה"כ נפשות: ${totalPeople}\n\n`
+          text += `--- מקלטים ---\n`
           regularShelters.forEach(s => {
             const c = getShelterPeopleCount(s.id)
-            if (c > 0) text += `${s.name} (מקלט ${s.number}): ${c} נפשות\n`
+            text += `${s.name} (מקלט ${s.number}): ${c} נפשות\n`
+          })
+          text += `\n--- סטטוס אישי ---\n`
+          specialStatuses.forEach(s => {
+            const c = getShelterPeopleCount(s.id)
+            text += `${s.name}: ${c} נפשות\n`
           })
           return text
         }}
         getTableData={() => ({
-          headers: ['מקלט', 'מספר', 'נפשות'],
-          rows: regularShelters.map(s => [s.name, String(s.number), String(getShelterPeopleCount(s.id))]),
+          headers: ['מזהה', 'שם', 'נוכחים'],
+          rows: [
+            ...regularShelters.map(s => [String(s.number), s.name, String(getShelterPeopleCount(s.id))]),
+            ...specialStatuses.map(s => [String(s.number), s.name, String(getShelterPeopleCount(s.id))]),
+          ],
         })}
       />
 
