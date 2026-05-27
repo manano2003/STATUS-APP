@@ -24,11 +24,11 @@ export default function SchoolClassEmergency() {
     await saveSchoolEmergencyToDB(schoolId, decodedClassName, status, currentUser?.id || '')
     setCurrentStatus(status)
     setSaved(true)
-    setTimeout(() => navigate(`/schools/${schoolId}/classes`), 1500)
+    setTimeout(() => navigate(`/schools/${schoolId}/classes?selected=${encodeURIComponent(decodedClassName)}`), 1500)
   }
 
   return (
-    <SchoolHome backTo={`/schools/${schoolId}/classes`} content={
+    <SchoolHome backTo={`/schools/${schoolId}/classes?selected=${encodeURIComponent(decodedClassName)}`} content={
       <>
         <p style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-accent)', textAlign: 'center', marginBottom: '4px' }}>
           חירום — כיתה {decodedClassName}

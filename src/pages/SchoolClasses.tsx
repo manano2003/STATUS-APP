@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../data/store'
 import { loadSchoolClassesFromDB, getSchoolClassesFromCache, getSchoolUsersFromCache } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
@@ -13,8 +13,9 @@ export default function SchoolClasses() {
   const { schoolId } = useParams<{ schoolId: string }>()
   const navigate = useNavigate()
   const { currentUser } = useStore()
+  const [searchParams] = useSearchParams()
   const [classes, setClasses] = useState<SchoolClass[]>(() => getSchoolClassesFromCache(schoolId || ''))
-  const [selectedClass, setSelectedClass] = useState<string | null>(null)
+  const [selectedClass, setSelectedClass] = useState<string | null>(searchParams.get('selected') ? decodeURIComponent(searchParams.get('selected')!) : null)
 
   useEffect(() => {
     if (schoolId) loadSchoolClassesFromDB(schoolId).then(setClasses)
@@ -41,6 +42,26 @@ export default function SchoolClasses() {
     const roles: string[] = me?.roles || []
     return !roles.includes('מנהלת') && !roles.includes('מזכירות') && roles.includes('סגל חינוכי')
   })()
+
+  // מזכירות - no access to classes tab
+  const isSecretaryOnly = (() => {
+    if (!currentUser || !schoolId) return false
+    if (currentUser.roles?.includes('ADMIN')) return false
+    const schoolUsers = getSchoolUsersFromCache(schoolId)
+    const me = schoolUsers.find((u: any) => u.email === currentUser.email || u.phone === currentUser.phone)
+    const roles: string[] = me?.roles || []
+    return roles.includes('מזכירות') && !roles.includes('מנהלת')
+  })()
+
+  if (isSecretaryOnly) {
+    return (
+      <SchoolHome content={
+        <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', marginTop: '40px', fontSize: '14px' }}>
+          אין גישה לטאב הכיתות — עברי לטאב מזכירות
+        </p>
+      } />
+    )
+  }
 
   // Teacher view - show two action squares directly
   if (selectedClass && isTeacherOnly) {
@@ -168,7 +189,7 @@ export default function SchoolClasses() {
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)' }}
               >
-                <p style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-accent)', margin: '0 0 4px', textShadow: '0 0 8px rgba(77, 166, 232, 0.6)' }}>
+                <p style={{ fontSize: '16px', fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>
                   {c.name}
                 </p>
                 <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>

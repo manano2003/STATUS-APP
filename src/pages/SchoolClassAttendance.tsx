@@ -51,14 +51,14 @@ export default function SchoolClassAttendance() {
     const today = new Date().toISOString().split('T')[0]
     await saveSchoolAttendanceToDB(schoolId, decodedClassName, today, attendance, currentUser?.id || '')
     setSaved(true)
-    setTimeout(() => navigate(`/schools/${schoolId}/classes`), 1500)
+    setTimeout(() => navigate(`/schools/${schoolId}/classes?selected=${encodeURIComponent(decodedClassName)}`), 1500)
   }
 
   const presentCount = Object.values(attendance).filter(v => v === true).length
   const absentCount = Object.values(attendance).filter(v => v === false).length
 
   return (
-    <SchoolHome backTo={`/schools/${schoolId}/classes`} content={
+    <SchoolHome backTo={`/schools/${schoolId}/classes?selected=${encodeURIComponent(decodedClassName)}`} content={
       <>
         <p style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-accent)', textAlign: 'center', marginBottom: '4px' }}>
           נוכחות — כיתה {decodedClassName}
