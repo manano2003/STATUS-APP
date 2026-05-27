@@ -27,6 +27,29 @@ export default function DashboardShelters() {
   return (
     <PageLayout title="🏛️ נוכחות במקלטים" subtitle={`סה"כ ${totalPeople} נפשות במקלטים`} backTo="/dashboard">
 
+      {/* Stats boxes */}
+      {(() => {
+        const shelterPeople = regularShelters.reduce((sum, s) => sum + getShelterPeopleCount(s.id), 0)
+        const mamadPeople = getShelterPeopleCount('Oql3xwJNS6liztw23t2C')
+        const noMamadPeople = getShelterPeopleCount('btyaFyyuroj9gEIcBYoz')
+        return (
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+            <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>במקלטים</p>
+              <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-success)', margin: 0 }}>{shelterPeople}</p>
+            </div>
+            <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>בממ"ד בבית</p>
+              <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-accent)', margin: 0 }}>{mamadPeople}</p>
+            </div>
+            <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>בבית ללא ממ"ד</p>
+              <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-danger)', margin: 0 }}>{noMamadPeople}</p>
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Search */}
       <input
         type="text"
