@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../data/supabase'
-import { getSchoolsFromCache, loadSchoolClassesFromDB, loadSchoolEmergencyFromDB, loadSchoolUsersFromDB, loadSchoolAttendanceFromDB } from '../data/sourceData'
+import { getSchoolsFromCache, loadSchoolsFromDB, loadSchoolClassesFromDB, loadSchoolEmergencyFromDB, loadSchoolUsersFromDB, loadSchoolAttendanceFromDB } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
 interface SchoolClass { name: string; students: string[] }
@@ -15,7 +15,11 @@ function getCouncilIdForSchool(schoolId: string): string {
 export default function SchoolCouncilView() {
   const { schoolId } = useParams<{ schoolId: string }>()
   const councilId = schoolId ? getCouncilIdForSchool(schoolId) : ''
-  const councilSchools = getSchoolsFromCache().filter(s => s.councilId === councilId)
+  const [councilSchools, setCouncilSchools] = useState(() => getSchoolsFromCache().filter(s => s.councilId === councilId))
+
+  useEffect(() => {
+    loadSchoolsFromDB().then(all => setCouncilSchools(all.filter(s => s.councilId === councilId)))
+  }, [councilId])
 
   const [selectedSchool, setSelectedSchool] = useState<string | null>(null)
   const [classes, setClasses] = useState<SchoolClass[]>([])
