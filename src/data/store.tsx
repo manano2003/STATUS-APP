@@ -529,15 +529,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (data) setBackupResidents(data.map(dbBackupResidentToApp))
     })
 
-    // Realtime subscription for checkins
-    const channel = supabase.channel('store-realtime')
-      .on('postgres_changes', { event: '*', schema: 'status', table: 'checkins' }, () => {
-        supabase.from('checkins').select('*').then(({ data }) => {
-          if (data) setCheckins(data.map(dbCheckinToApp))
-        })
+    // Poll checkins every 5 seconds for cross-device sync
+    const pollCheckins = setInterval(() => {
+      supabase.from('checkins').select('*').then(({ data }) => {
+        if (data) setCheckins(data.map(dbCheckinToApp))
       })
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
+    }, 5000)
+    return () => clearInterval(pollCheckins)
   }, [])
 
   // --- Users ---
