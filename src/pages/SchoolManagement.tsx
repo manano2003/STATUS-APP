@@ -48,7 +48,7 @@ export default function SchoolManagement() {
           return (
             <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
               <div style={{
-                flex: 1, background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff',
                 borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center',
               }}>
                 <p style={{ fontSize: '28px', fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>
@@ -57,7 +57,7 @@ export default function SchoolManagement() {
                 <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>תלמידים נוכחים</p>
               </div>
               <div style={{
-                flex: 1, background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff',
                 borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center',
               }}>
                 <p style={{
