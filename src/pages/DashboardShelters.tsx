@@ -95,6 +95,30 @@ export default function DashboardShelters() {
                   <span style={{ fontSize: '14px', fontWeight: 800, color }}>{c.peopleCount}</span>
                 </div>
               ))}
+              {/* WhatsApp button */}
+              <div style={{ padding: '12px', borderTop: '1px solid var(--color-border)' }}>
+                <button
+                  onClick={() => {
+                    let text = `*${title}*\nסה"כ: ${checkins.reduce((s, c) => s + c.peopleCount, 0)} נפשות\n\n`
+                    text += `שם | טלפון | בית | נפשות\n`
+                    text += `──────────────────\n`
+                    checkins.forEach(c => {
+                      text += `${c.userName} | ${c.userPhone || '—'} | ${c.userHouseNumber || '—'} | ${c.peopleCount}\n`
+                    })
+                    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--color-success)', background: 'rgba(77, 232, 138, 0.08)',
+                    color: 'var(--color-success)', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+                    fontFamily: 'var(--font-family)',
+                  }}
+                >
+                  <span style={{ fontSize: '18px' }}>💬</span>
+                  שלח בוואטסאפ
+                </button>
+              </div>
             </div>
           </div>
         )
