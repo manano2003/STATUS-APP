@@ -223,7 +223,8 @@ export function getSchoolsFromCache(): SchoolRecord[] {
 
 export async function saveSchoolsToDB(schools: SchoolRecord[], callerId: string): Promise<boolean> {
   localStorage.setItem('status_schools', JSON.stringify(schools))
-  const { data: result } = await supabase.rpc('save_schools', { caller_id: callerId, school_data: schools })
+  const { data: result, error } = await supabase.rpc('save_schools', { caller_id: callerId, school_data: JSON.parse(JSON.stringify(schools)) })
+  if (error) console.error('saveSchoolsToDB error:', error)
   return result?.success || false
 }
 
