@@ -1,32 +1,30 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../data/supabase'
-import { getSchoolsFromCache, loadSchoolsFromDB, loadSchoolClassesFromDB, loadSchoolEmergencyFromDB, loadSchoolUsersFromDB, loadSchoolAttendanceFromDB } from '../data/sourceData'
+import { loadSchoolsFromDB, loadSchoolClassesFromDB, loadSchoolEmergencyFromDB, loadSchoolUsersFromDB, loadSchoolAttendanceFromDB } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
 interface SchoolClass { name: string; students: string[] }
+interface SchoolRecord { id: string; name: string; councilId: string }
 
-function getCouncilIdForSchool(schoolId: string): string {
-  const schools = getSchoolsFromCache()
-  const school = schools.find(s => s.id === schoolId)
-  return school?.councilId || 'mateh-yehuda'
-}
+const councils = [
+  { id: 'mateh-yehuda', name: 'מטה יהודה', icon: '🏛️' },
+]
 
 export default function SchoolCouncilView() {
   const { schoolId } = useParams<{ schoolId: string }>()
-  const councilId = schoolId ? getCouncilIdForSchool(schoolId) : ''
-  const [councilSchools, setCouncilSchools] = useState(() => getSchoolsFromCache().filter(s => s.councilId === councilId))
-
-  useEffect(() => {
-    loadSchoolsFromDB().then(all => setCouncilSchools(all.filter(s => s.councilId === councilId)))
-  }, [councilId])
-
+  const [allSchools, setAllSchools] = useState<SchoolRecord[]>([])
+  const [selectedCouncil, setSelectedCouncil] = useState<string | null>(null)
   const [selectedSchool, setSelectedSchool] = useState<string | null>(null)
   const [classes, setClasses] = useState<SchoolClass[]>([])
   const [emergency, setEmergency] = useState<Record<string, string>>({})
   const [staffUsers, setStaffUsers] = useState<any[]>([])
   const [attendanceMap, setAttendanceMap] = useState<Record<string, Record<string, boolean>>>({})
   const [expandedClass, setExpandedClass] = useState<string | null>(null)
+
+  useEffect(() => {
+    loadSchoolsFromDB().then(setAllSchools)
+  }, [])
 
   const loadAllAttendance = async (sid: string, classList: SchoolClass[]) => {
     const today = new Date().toISOString().split('T')[0]
@@ -59,9 +57,9 @@ export default function SchoolCouncilView() {
     return () => { supabase.removeChannel(channel) }
   }, [selectedSchool])
 
-  // School selected - show dashboard like page 93
+  // Level 3: School selected - show class dashboard
   if (selectedSchool) {
-    const schoolName = councilSchools.find(s => s.id === selectedSchool)?.name || selectedSchool
+    const schoolName = allSchools.find(s => s.id === selectedSchool)?.name || selectedSchool
     const totalStudents = classes.reduce((sum, c) => sum + c.students.length, 0)
     let totalPresent = 0
     classes.forEach(c => {
@@ -80,7 +78,7 @@ export default function SchoolCouncilView() {
               background: 'rgba(77, 166, 232, 0.15)', border: '1px solid var(--color-accent)',
               borderRadius: 'var(--radius-sm)', color: 'var(--color-accent)',
               cursor: 'pointer', fontSize: '13px', fontWeight: 700, padding: '8px 16px',
-            }}>חזרה למועצה</button>
+            }}>חזרה לבתי ספר</button>
           </div>
 
           <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', textAlign: 'center', marginBottom: '16px' }}>
@@ -144,8 +142,8 @@ export default function SchoolCouncilView() {
                 </div>
                 {teacher && (
                   <div style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: '2px solid var(--color-accent)', fontSize: '13px', background: 'rgba(77, 166, 232, 0.08)' }}>
-                    <span style={{ flex: 1, fontWeight: 700, color: 'var(--color-accent)' }}>👩‍🏫 {teacher.fullName}</span>
-                    {teacher.phone && <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>{teacher.phone}</span>}
+                    <span style={{ flex: 1, fontWeight: 700, color: 'var(--color-accent)' }}>{teacher.fullName} (מורה)</span>
+                    {teacher.phone && <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', direction: 'ltr' }}>{teacher.phone}</span>}
                   </div>
                 )}
                 {cls.students.map(student => {
@@ -166,18 +164,59 @@ export default function SchoolCouncilView() {
     )
   }
 
-  // Council view - show school squares
+  // Level 2: Council selected - show school squares
+  if (selectedCouncil) {
+    const council = councils.find(c => c.id === selectedCouncil)
+    const schools = allSchools.filter(s => s.councilId === selectedCouncil)
+    return (
+      <SchoolHome content={
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <p style={{ fontSize: '18px', fontWeight: 800, color: '#fff', margin: 0 }}>{council?.name}</p>
+            <button onClick={() => setSelectedCouncil(null)} style={{
+              background: 'rgba(77, 166, 232, 0.15)', border: '1px solid var(--color-accent)',
+              borderRadius: 'var(--radius-sm)', color: 'var(--color-accent)',
+              cursor: 'pointer', fontSize: '13px', fontWeight: 700, padding: '8px 16px',
+            }}>חזרה למועצות</button>
+          </div>
+          <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', textAlign: 'center', marginBottom: '16px' }}>
+            בתי ספר במועצה
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
+            {schools.map(school => (
+              <button
+                key={school.id}
+                onClick={() => setSelectedSchool(school.id)}
+                style={{
+                  background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius)', width: '160px', padding: '32px 16px',
+                  cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+              >
+                <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>🏫</span>
+                <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text)' }}>{school.name}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      } />
+    )
+  }
+
+  // Level 1: Show council squares
   return (
     <SchoolHome content={
       <>
         <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', textAlign: 'center', marginBottom: '16px' }}>
-          מוסדות חינוך במועצה
+          מועצות
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
-          {councilSchools.map(school => (
+          {councils.map(c => (
             <button
-              key={school.id}
-              onClick={() => setSelectedSchool(school.id)}
+              key={c.id}
+              onClick={() => setSelectedCouncil(c.id)}
               style={{
                 background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
                 borderRadius: 'var(--radius)', width: '160px', padding: '32px 16px',
@@ -186,8 +225,8 @@ export default function SchoolCouncilView() {
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
             >
-              <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>🏫</span>
-              <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text)' }}>{school.name}</span>
+              <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>{c.icon}</span>
+              <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text)' }}>{c.name}</span>
             </button>
           ))}
         </div>
