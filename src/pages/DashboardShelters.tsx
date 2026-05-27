@@ -11,6 +11,7 @@ export default function DashboardShelters() {
   const navigate = useNavigate()
   const { getShelterPeopleCount, getShelterCheckins, clearAllCheckins } = useStore()
   const [search, setSearch] = useState('')
+  const [popupShelterId, setPopupShelterId] = useState<string | null>(null)
   const regularShelters = getRegularShelters()
   const specialStatuses = getSpecialStatuses()
 
@@ -38,13 +39,62 @@ export default function DashboardShelters() {
               <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>נוכחות במקלטים</p>
               <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-success)', margin: 0 }}>{shelterPeople}</p>
             </div>
-            <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
+            <div onClick={() => setPopupShelterId('Oql3xwJNS6liztw23t2C')} style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center', cursor: 'pointer' }}>
               <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>נוכחות בממ"ד בבית</p>
               <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-accent)', margin: 0 }}>{mamadPeople}</p>
             </div>
-            <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
+            <div onClick={() => setPopupShelterId('btyaFyyuroj9gEIcBYoz')} style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center', cursor: 'pointer' }}>
               <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>נוכחות בבית ללא ממ"ד</p>
               <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-danger)', margin: 0 }}>{noMamadPeople}</p>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Popup for mamad / no mamad */}
+      {popupShelterId && (() => {
+        const checkins = getShelterCheckins(popupShelterId)
+        const isMamad = popupShelterId === 'Oql3xwJNS6liztw23t2C'
+        const title = isMamad ? 'נוכחות בממ"ד בבית' : 'נוכחות בבית ללא ממ"ד'
+        const color = isMamad ? 'var(--color-accent)' : 'var(--color-danger)'
+        return (
+          <div
+            onClick={() => setPopupShelterId(null)}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 9999, padding: '20px',
+            }}
+          >
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--color-bg-card)', borderRadius: 'var(--radius)',
+              border: `2px solid ${color}`, overflow: 'hidden',
+              width: '100%', maxWidth: '400px', maxHeight: '80vh', overflowY: 'auto',
+            }}>
+              <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)', textAlign: 'center', position: 'sticky', top: 0, zIndex: 1, background: 'var(--color-bg-card)' }}>
+                <span style={{ fontSize: '17px', fontWeight: 800, color }}>{title}</span>
+                <span style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginRight: '8px' }}>({checkins.length})</span>
+                <button onClick={() => setPopupShelterId(null)} style={{
+                  position: 'absolute', top: 10, left: 10, background: 'none', border: 'none',
+                  color: 'var(--color-text-secondary)', fontSize: '20px', cursor: 'pointer', lineHeight: 1,
+                }}>✕</button>
+              </div>
+              {checkins.length === 0 ? (
+                <p style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '13px' }}>אין נוכחים</p>
+              ) : checkins.map(c => (
+                <div key={c.id} style={{
+                  display: 'flex', alignItems: 'center', padding: '10px 14px',
+                  borderBottom: '1px solid var(--color-border)', fontSize: '13px',
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '14px', fontWeight: 700, margin: 0, color: 'var(--color-text)' }}>{c.userName}</p>
+                    <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>
+                      {c.userHouseNumber ? `בית ${c.userHouseNumber}` : ''}{c.userPhone ? ` | ${c.userPhone}` : ''}
+                    </p>
+                  </div>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color }}>{c.peopleCount}</span>
+                </div>
+              ))}
             </div>
           </div>
         )
