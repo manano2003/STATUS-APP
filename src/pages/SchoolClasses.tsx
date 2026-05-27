@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../data/store'
+import { supabase } from '../data/supabase'
 import { loadSchoolClassesFromDB, getSchoolClassesFromCache, getSchoolUsersFromCache } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
@@ -18,7 +19,14 @@ export default function SchoolClasses() {
   const [selectedClass, setSelectedClass] = useState<string | null>(searchParams.get('selected') ? decodeURIComponent(searchParams.get('selected')!) : null)
 
   useEffect(() => {
-    if (schoolId) loadSchoolClassesFromDB(schoolId).then(setClasses)
+    if (!schoolId) return
+    loadSchoolClassesFromDB(schoolId).then(setClasses)
+    const channel = supabase.channel(`classes-${schoolId}`)
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_classes', filter: `school_id=eq.${schoolId}` }, () => {
+        loadSchoolClassesFromDB(schoolId).then(setClasses)
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [schoolId])
 
   // Check if user is סגל חינוכי (teacher) - auto-select their class

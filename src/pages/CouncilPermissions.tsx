@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useStore } from '../data/store'
+import { supabase } from '../data/supabase'
 import { loadCouncilUsersFromDB, saveCouncilUsersToDB, getCouncilUsersFromCache, getSchoolsFromCache } from '../data/sourceData'
 import PageLayout from '../components/PageLayout'
 
@@ -27,7 +28,14 @@ export default function CouncilPermissions() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   useEffect(() => {
-    if (councilId) loadCouncilUsersFromDB(councilId).then(setUsers)
+    if (!councilId) return
+    loadCouncilUsersFromDB(councilId).then(setUsers)
+    const channel = supabase.channel(`council-${councilId}`)
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'council_users', filter: `council_id=eq.${councilId}` }, () => {
+        loadCouncilUsersFromDB(councilId).then(setUsers)
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [councilId])
 
   const councilName = councilId ? councilNames[councilId] || councilId : ''

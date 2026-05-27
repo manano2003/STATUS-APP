@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useStore } from '../data/store'
+import { supabase } from '../data/supabase'
 import { loadSchoolUsersFromDB, saveSchoolUsersToDB, getSchoolUsersFromCache } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
@@ -25,7 +26,14 @@ export default function SchoolPermissions() {
   const [users, setUsers] = useState<SchoolUser[]>(() => getSchoolUsersFromCache(schoolId || ''))
 
   useEffect(() => {
-    if (schoolId) loadSchoolUsersFromDB(schoolId).then(u => setUsers(u as SchoolUser[]))
+    if (!schoolId) return
+    loadSchoolUsersFromDB(schoolId).then(u => setUsers(u as SchoolUser[]))
+    const channel = supabase.channel(`perms-${schoolId}`)
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_users', filter: `school_id=eq.${schoolId}` }, () => {
+        loadSchoolUsersFromDB(schoolId).then(u => setUsers(u as SchoolUser[]))
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [schoolId])
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [search, setSearch] = useState('')

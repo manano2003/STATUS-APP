@@ -31,7 +31,14 @@ export default function SchoolStudents() {
   }
 
   useEffect(() => {
-    if (schoolId) loadSchoolClassesFromDB(schoolId).then(setClasses)
+    if (!schoolId) return
+    loadSchoolClassesFromDB(schoolId).then(setClasses)
+    const channel = supabase.channel(`students-${schoolId}`)
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_classes', filter: `school_id=eq.${schoolId}` }, () => {
+        loadSchoolClassesFromDB(schoolId).then(setClasses)
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [schoolId])
 
   const totalStudents = classes.reduce((sum, c) => sum + c.students.length, 0)

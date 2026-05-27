@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
+import { supabase } from '../data/supabase'
 import { loadSchoolsFromDB, saveSchoolsToDB, getSchoolsFromCache } from '../data/sourceData'
 import PageLayout from '../components/PageLayout'
 
@@ -25,6 +26,12 @@ export default function SchoolsList() {
 
   useEffect(() => {
     loadSchoolsFromDB().then(s => { if (s.length > 0) setSchools(s) })
+    const channel = supabase.channel('schools-list')
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'schools' }, () => {
+        loadSchoolsFromDB().then(s => { if (s.length > 0) setSchools(s) })
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [])
   const [showAdd, setShowAdd] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)

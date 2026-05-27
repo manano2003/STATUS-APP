@@ -40,7 +40,15 @@ export default function SchoolBackup() {
     if (users) setBackupUsers(users)
   }
 
-  useEffect(() => { loadBackups() }, [schoolId])
+  useEffect(() => {
+    loadBackups()
+    if (!schoolId) return
+    const channel = supabase.channel(`backup-${schoolId}`)
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'backup_school_classes' }, () => loadBackups())
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'backup_school_users' }, () => loadBackups())
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [schoolId])
 
   const restoreClass = async (backupId: number) => {
     setLoading(true)

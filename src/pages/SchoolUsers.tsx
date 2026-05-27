@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
+import { supabase } from '../data/supabase'
 import { loadSchoolUsersFromDB, saveSchoolUsersToDB, getSchoolUsersFromCache } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 import * as XLSX from 'xlsx'
@@ -16,7 +17,14 @@ export default function SchoolUsers() {
   const [schoolUsers, setSchoolUsers] = useState<any[]>(() => getSchoolUsersFromCache(schoolId || ''))
 
   useEffect(() => {
-    if (schoolId) loadSchoolUsersFromDB(schoolId).then(setSchoolUsers)
+    if (!schoolId) return
+    loadSchoolUsersFromDB(schoolId).then(setSchoolUsers)
+    const channel = supabase.channel(`users-${schoolId}`)
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_users', filter: `school_id=eq.${schoolId}` }, () => {
+        loadSchoolUsersFromDB(schoolId).then(setSchoolUsers)
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [schoolId])
 
   const filtered = schoolUsers.filter((u: any) => {
