@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../data/store'
 import { supabase } from '../data/supabase'
-import { loadSchoolClassesFromDB, getSchoolClassesFromCache, getSchoolUsersFromCache, getSchoolEmergencyFromCache, loadSchoolEmergencyFromDB } from '../data/sourceData'
+import { loadSchoolClassesFromDB, getSchoolClassesFromCache, getSchoolUsersFromCache, getSchoolEmergencyFromCache, loadSchoolEmergencyFromDB, saveSchoolEmergencyToDB } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
 interface SchoolClass {
@@ -127,6 +127,24 @@ export default function SchoolClasses() {
               <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-danger)', margin: 0, lineHeight: 1.8 }}>יש להיכנס למרחב מוגן במיידי ולהישאר עד הודעה מפיקוד העורף</p>
             </div>
           )}
+          {(emergency[cls.name] === 'protected' || emergency[cls.name] === 'not_protected') && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+              <button
+                onClick={async () => {
+                  if (!schoolId) return
+                  await saveSchoolEmergencyToDB(schoolId, cls.name, 'none', currentUser?.id || '')
+                  setEmergency(prev => ({ ...prev, [cls.name]: 'none' }))
+                }}
+                style={{
+                  background: 'var(--color-accent)', color: '#fff', border: 'none',
+                  borderRadius: 'var(--radius-sm)', padding: '12px 24px',
+                  fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                גמר אירוע חירום — יציאה ממרחב מוגן
+              </button>
+            </div>
+          )}
         </>
       } />
     )
@@ -188,6 +206,24 @@ export default function SchoolClasses() {
           {emergency[cls.name] === 'not_protected' && (
             <div style={{ marginTop: '24px', background: 'rgba(232, 77, 77, 0.1)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center' }}>
               <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-danger)', margin: 0, lineHeight: 1.8 }}>יש להיכנס למרחב מוגן במיידי ולהישאר עד הודעה מפיקוד העורף</p>
+            </div>
+          )}
+          {(emergency[cls.name] === 'protected' || emergency[cls.name] === 'not_protected') && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+              <button
+                onClick={async () => {
+                  if (!schoolId) return
+                  await saveSchoolEmergencyToDB(schoolId, cls.name, 'none', currentUser?.id || '')
+                  setEmergency(prev => ({ ...prev, [cls.name]: 'none' }))
+                }}
+                style={{
+                  background: 'var(--color-accent)', color: '#fff', border: 'none',
+                  borderRadius: 'var(--radius-sm)', padding: '12px 24px',
+                  fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                גמר אירוע חירום — יציאה ממרחב מוגן
+              </button>
             </div>
           )}
         </>
