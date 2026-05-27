@@ -35,15 +35,15 @@ export default function DashboardShelters() {
         return (
           <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
             <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
-              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>במקלטים</p>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>נוכחות במקלטים</p>
               <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-success)', margin: 0 }}>{shelterPeople}</p>
             </div>
             <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
-              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>בממ"ד בבית</p>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>נוכחות בממ"ד בבית</p>
               <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-accent)', margin: 0 }}>{mamadPeople}</p>
             </div>
             <div style={{ flex: 1, background: 'var(--color-bg-card)', border: '2px solid #fff', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
-              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>בבית ללא ממ"ד</p>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 6px' }}>נוכחות בבית ללא ממ"ד</p>
               <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-danger)', margin: 0 }}>{noMamadPeople}</p>
             </div>
           </div>
