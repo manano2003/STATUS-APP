@@ -8,7 +8,7 @@ const statuses: { type: EmergencyStatusType; icon: string }[] = [
   { type: 'located-healthy', icon: '✅' },
   { type: 'located-evacuated', icon: '🚑' },
   { type: 'missing', icon: '❓' },
-  { type: 'harduf', icon: '🕯️' },
+  { type: 'harduf', icon: 'candle' },
 ]
 
 export default function ResidentStatus() {
@@ -82,7 +82,11 @@ export default function ResidentStatus() {
                 transition: 'all 0.2s ease',
               }}
             >
-              <span style={{ fontSize: '24px' }}>{s.icon}</span>
+              {s.icon === 'candle' ? (
+                <img src="/STATUS-APP/candle.png" alt="הרדוף" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+              ) : (
+                <span style={{ fontSize: '24px' }}>{s.icon}</span>
+              )}
               <span style={{
                 fontSize: '16px', fontWeight: isActive ? 800 : 600,
                 color: isActive ? EMERGENCY_STATUS_COLORS[s.type] : 'var(--color-text)',
