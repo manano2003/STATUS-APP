@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
+import { supabase } from '../data/supabase'
 import { loadSchoolClassesFromDB, getSchoolClassesFromCache, loadSchoolEmergencyFromDB, getSchoolEmergencyFromCache, saveSchoolEmergencyToDB } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
@@ -17,10 +18,21 @@ export default function SchoolManagement() {
   const [emergency, setEmergency] = useState<Record<string, string>>(() => getSchoolEmergencyFromCache(schoolId || ''))
 
   useEffect(() => {
-    if (schoolId) {
+    if (!schoolId) return
+    const refresh = () => {
       loadSchoolClassesFromDB(schoolId).then(setClasses)
       loadSchoolEmergencyFromDB(schoolId).then(setEmergency)
     }
+    refresh()
+
+    // Realtime subscription - instant updates from any device
+    const channel = supabase.channel(`school-${schoolId}`)
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_attendance', filter: `school_id=eq.${schoolId}` }, () => refresh())
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_emergency', filter: `school_id=eq.${schoolId}` }, () => refresh())
+      .on('postgres_changes', { event: '*', schema: 'status', table: 'school_classes', filter: `school_id=eq.${schoolId}` }, () => refresh())
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
   }, [schoolId])
   const [expandedClass, setExpandedClass] = useState<string | null>(null)
 
