@@ -187,8 +187,8 @@ export default function SchoolManagement() {
                     borderBottom: '2px solid var(--color-accent)', fontSize: '13px',
                     background: 'rgba(77, 166, 232, 0.08)',
                   }}>
-                    <span style={{ flex: 1, fontWeight: 700, color: 'var(--color-accent)' }}>👩‍🏫 {teacher.fullName}</span>
-                    {teacher.phone && <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>{teacher.phone}</span>}
+                    <span style={{ flex: 1, fontWeight: 700, color: 'var(--color-accent)' }}>{teacher.fullName} (מורה)</span>
+                    {teacher.phone && <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', direction: 'ltr' }}>{teacher.phone}</span>}
                   </div>
                 )}
                 {cls.students.map(student => {
