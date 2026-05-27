@@ -8,6 +8,7 @@ import ExportButtons from '../components/ExportButtons'
 export default function DashboardClubs() {
   const { getClubAttendance, currentUser } = useStore()
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [popupType, setPopupType] = useState<'all' | 'children' | 'staff' | null>(null)
   const clubs = getSourceClubs()
 
   const totalChildren = clubs.reduce((sum, k) => sum + k.children.length, 0)
@@ -31,20 +32,20 @@ export default function DashboardClubs() {
 
       {/* 3 Summary Boxes */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-        <div style={{
+        <div onClick={() => setPopupType('all')} style={{
           flex: 1, padding: '12px 8px', borderRadius: 'var(--radius-sm)',
           background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
-          textAlign: 'center',
+          textAlign: 'center', cursor: 'pointer',
         }}>
           <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-accent)', margin: '0 0 2px' }}>
             {totalPresent}/{totalAll}
           </p>
           <p style={{ fontSize: '9px', color: 'var(--color-text-secondary)', margin: 0 }}>נוכחות כללית</p>
         </div>
-        <div style={{
+        <div onClick={() => setPopupType('children')} style={{
           flex: 1, padding: '12px 8px', borderRadius: 'var(--radius-sm)',
           background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
-          textAlign: 'center',
+          textAlign: 'center', cursor: 'pointer',
         }}>
           <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-success)', margin: '0 0 2px' }}>
             {presentChildren}/{totalChildren}
@@ -53,10 +54,10 @@ export default function DashboardClubs() {
             ילדים ({totalChildren > 0 ? Math.round((presentChildren / totalChildren) * 100) : 0}%)
           </p>
         </div>
-        <div style={{
+        <div onClick={() => setPopupType('staff')} style={{
           flex: 1, padding: '12px 8px', borderRadius: 'var(--radius-sm)',
           background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
-          textAlign: 'center',
+          textAlign: 'center', cursor: 'pointer',
         }}>
           <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-warning)', margin: '0 0 2px' }}>
             {presentStaff}/{totalStaff}
@@ -64,6 +65,56 @@ export default function DashboardClubs() {
           <p style={{ fontSize: '9px', color: 'var(--color-text-secondary)', margin: 0 }}>סגל</p>
         </div>
       </div>
+
+      {/* Popup */}
+      {popupType && (() => {
+        const title = popupType === 'all' ? 'נוכחות כללית' : popupType === 'children' ? 'נוכחות ילדים' : 'נוכחות סגל'
+        const color = popupType === 'all' ? 'var(--color-accent)' : popupType === 'children' ? 'var(--color-success)' : 'var(--color-warning)'
+        const generateText = () => {
+          let text = `*${title} — מועדונים*\n\n`
+          clubs.forEach(club => {
+            const att = getClubAttendance(club.id)
+            const names: string[] = []
+            if (popupType === 'all' || popupType === 'children') names.push(...(att ? att.presentChildren.filter(n => club.children.includes(n)) : []))
+            if (popupType === 'all' || popupType === 'staff') names.push(...(att ? att.presentChildren.filter(n => club.staff.includes(n)) : []))
+            if (names.length > 0) { text += `*${club.name} (${names.length}):*\n`; names.forEach(n => { text += `  ${n}\n` }); text += '\n' }
+          })
+          return text
+        }
+        return (
+          <div onClick={() => setPopupType(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius)', border: `2px solid ${color}`, overflow: 'hidden', width: '100%', maxWidth: '400px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)', textAlign: 'center', background: 'var(--color-bg-card)', position: 'sticky', top: 0, zIndex: 1 }}>
+                <span style={{ fontSize: '17px', fontWeight: 800, color }}>{title}</span>
+                <button onClick={() => setPopupType(null)} style={{ position: 'absolute', top: 10, left: 10, background: 'none', border: 'none', color: 'var(--color-text-secondary)', fontSize: '20px', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+              </div>
+              <div style={{ overflowY: 'auto', flex: 1 }}>
+                {clubs.map(club => {
+                  const att = getClubAttendance(club.id)
+                  const names: string[] = []
+                  if (popupType === 'all' || popupType === 'children') names.push(...(att ? att.presentChildren.filter(n => club.children.includes(n)) : []))
+                  if (popupType === 'all' || popupType === 'staff') names.push(...(att ? att.presentChildren.filter(n => club.staff.includes(n)) : []))
+                  if (names.length === 0) return null
+                  return (
+                    <div key={club.id}>
+                      <div style={{ padding: '8px 14px', background: `${color}15`, borderBottom: '1px solid var(--color-border)', fontSize: '13px', fontWeight: 800, color }}>{club.name} ({names.length})</div>
+                      {names.map(name => (<div key={name} style={{ padding: '8px 14px 8px 28px', borderBottom: '1px solid var(--color-border)', fontSize: '12px' }}>{name}</div>))}
+                    </div>
+                  )
+                })}
+              </div>
+              <div style={{ padding: '10px', borderTop: '1px solid var(--color-border)', display: 'flex', gap: '8px' }}>
+                <button onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent(generateText())}`, '_blank') }} style={{ flex: 1, padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-success)', background: 'rgba(77, 232, 138, 0.08)', color: 'var(--color-success)', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-family)' }}>
+                  <span style={{ fontSize: '18px' }}>💬</span> WhatsApp
+                </button>
+                <button onClick={() => { const text = generateText().replace(/\*/g, ''); const w = window.open('', '_blank'); if (w) { w.document.write(`<html dir="rtl"><head><title>${title}</title><style>body{font-family:Arial;padding:40px;direction:rtl}h1{color:#0A1628;border-bottom:2px solid #4DA6E8;padding-bottom:10px}pre{white-space:pre-wrap;font-family:Arial;font-size:14px;line-height:1.8}</style></head><body><h1>${title}</h1><pre>${text}</pre><script>window.print()<\/script></body></html>`); w.document.close() } }} style={{ flex: 1, padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg-card)', color: 'var(--color-accent)', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-family)' }}>
+                  <span style={{ fontSize: '18px' }}>🖨️</span> הדפסה
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       <div style={{
         background: 'var(--color-bg-card)',
