@@ -12,6 +12,16 @@
     <link rel="stylesheet" crossorigin href="/STATUS-APP/assets/index-Cya5hm7I.css">
   </head>
   <body>
+    <!-- GitHub Pages SPA redirect handler -->
+    <script>
+      (function(){
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
     <div id="root"></div>
   </body>
 </html>
