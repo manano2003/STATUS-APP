@@ -1,26 +1,13 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
+import { loadSchoolsFromDB, saveSchoolsToDB, getSchoolsFromCache } from '../data/sourceData'
 import PageLayout from '../components/PageLayout'
 
 interface School {
   id: string
   name: string
   councilId: string
-}
-
-const STORAGE_KEY = 'status_schools'
-
-function loadSchools(): School[] {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) return JSON.parse(saved)
-  } catch {}
-  return [{ id: 'hartuv', name: 'הרטוב', councilId: 'mateh-yehuda' }]
-}
-
-function saveSchools(schools: School[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(schools))
 }
 
 const councilNames: Record<string, string> = {
@@ -31,7 +18,14 @@ export default function SchoolsList() {
   const { councilId } = useParams<{ councilId: string }>()
   const navigate = useNavigate()
   const { currentUser } = useStore()
-  const [schools, setSchools] = useState<School[]>(loadSchools)
+  const [schools, setSchools] = useState<School[]>(() => {
+    const cached = getSchoolsFromCache()
+    return cached.length > 0 ? cached : [{ id: 'hartuv', name: 'הרטוב', councilId: 'mateh-yehuda' }]
+  })
+
+  useEffect(() => {
+    loadSchoolsFromDB().then(s => { if (s.length > 0) setSchools(s) })
+  }, [])
   const [showAdd, setShowAdd] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
@@ -70,7 +64,7 @@ export default function SchoolsList() {
     const id = newName.trim().replace(/\s+/g, '-').replace(/[/"]/g, '').toLowerCase()
     const updated = [...schools, { id, name: newName.trim(), councilId }]
     setSchools(updated)
-    saveSchools(updated)
+    saveSchoolsToDB(updated, currentUser?.id || '')
     setNewName('')
     setShowAdd(false)
   }

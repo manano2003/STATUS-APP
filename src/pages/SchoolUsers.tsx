@@ -1,19 +1,23 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useStore } from '../data/store'
+import { loadSchoolUsersFromDB, saveSchoolUsersToDB, getSchoolUsersFromCache } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 import * as XLSX from 'xlsx'
 
 export default function SchoolUsers() {
   const { schoolId } = useParams<{ schoolId: string }>()
   const navigate = useNavigate()
+  const { currentUser } = useStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [search, setSearch] = useState('')
   const [pendingUpload, setPendingUpload] = useState<any[] | null>(null)
 
-  // School-specific users - completely separate from community users
-  const [schoolUsers, setSchoolUsers] = useState<any[]>(() => {
-    try { return JSON.parse(localStorage.getItem(`school_users_${schoolId}`) || '[]') } catch { return [] }
-  })
+  const [schoolUsers, setSchoolUsers] = useState<any[]>(() => getSchoolUsersFromCache(schoolId || ''))
+
+  useEffect(() => {
+    if (schoolId) loadSchoolUsersFromDB(schoolId).then(setSchoolUsers)
+  }, [schoolId])
 
   const filtered = schoolUsers.filter((u: any) => {
     if (!search.trim()) return true
@@ -82,7 +86,7 @@ export default function SchoolUsers() {
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
             <button onClick={() => {
               setSchoolUsers(pendingUpload)
-              localStorage.setItem(`school_users_${schoolId}`, JSON.stringify(pendingUpload))
+              saveSchoolUsersToDB(schoolId || '', pendingUpload, currentUser?.id || '')
               setPendingUpload(null)
             }} style={{
               background: 'var(--color-success)', color: '#fff', border: 'none',

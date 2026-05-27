@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useStore } from '../data/store'
+import { loadCouncilUsersFromDB, saveCouncilUsersToDB, getCouncilUsersFromCache, getSchoolsFromCache } from '../data/sourceData'
 import PageLayout from '../components/PageLayout'
 
 interface CouncilUser {
@@ -10,45 +12,26 @@ interface CouncilUser {
   registeredAt: string
 }
 
-const STORAGE_KEY_PREFIX = 'council_users_'
-
-function loadCouncilUsers(councilId: string): CouncilUser[] {
-  try { return JSON.parse(localStorage.getItem(`${STORAGE_KEY_PREFIX}${councilId}`) || '[]') } catch { return [] }
-}
-
-function saveCouncilUsers(councilId: string, users: CouncilUser[]) {
-  localStorage.setItem(`${STORAGE_KEY_PREFIX}${councilId}`, JSON.stringify(users))
-}
-
-interface School {
-  id: string
-  name: string
-  councilId: string
-}
-
-function loadSchools(): School[] {
-  try {
-    const saved = localStorage.getItem('status_schools')
-    if (saved) return JSON.parse(saved)
-  } catch {}
-  return [{ id: 'hartuv', name: 'הרטוב', councilId: 'mateh-yehuda' }]
-}
-
 const councilNames: Record<string, string> = {
   'mateh-yehuda': 'מטה יהודה',
 }
 
 export default function CouncilPermissions() {
   const { councilId } = useParams<{ councilId: string }>()
-  const [users, setUsers] = useState<CouncilUser[]>(() => loadCouncilUsers(councilId || ''))
+  const { currentUser } = useStore()
+  const [users, setUsers] = useState<CouncilUser[]>(() => getCouncilUsersFromCache(councilId || ''))
   const [showAdd, setShowAdd] = useState(false)
   const [newName, setNewName] = useState('')
   const [newPhone, setNewPhone] = useState('')
   const [newEmail, setNewEmail] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
+  useEffect(() => {
+    if (councilId) loadCouncilUsersFromDB(councilId).then(setUsers)
+  }, [councilId])
+
   const councilName = councilId ? councilNames[councilId] || councilId : ''
-  const schools = loadSchools().filter(s => s.councilId === councilId)
+  const schools = getSchoolsFromCache().filter(s => s.councilId === councilId)
 
   const addUser = () => {
     if (!newName.trim() || !councilId) return
@@ -61,7 +44,7 @@ export default function CouncilPermissions() {
     }
     const updated = [...users, user]
     setUsers(updated)
-    saveCouncilUsers(councilId, updated)
+    saveCouncilUsersToDB(councilId, updated, currentUser?.id || '')
     setNewName('')
     setNewPhone('')
     setNewEmail('')
@@ -72,7 +55,7 @@ export default function CouncilPermissions() {
     if (!councilId) return
     const updated = users.filter(u => u.id !== userId)
     setUsers(updated)
-    saveCouncilUsers(councilId, updated)
+    saveCouncilUsersToDB(councilId, updated, currentUser?.id || '')
     setDeleteConfirm(null)
   }
 

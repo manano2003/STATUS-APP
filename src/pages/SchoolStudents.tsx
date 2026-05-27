@@ -1,5 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useStore } from '../data/store'
+import { loadSchoolClassesFromDB, saveSchoolClassesToDB, getSchoolClassesFromCache } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 import * as XLSX from 'xlsx'
 
@@ -8,28 +10,23 @@ interface SchoolClass {
   students: string[]
 }
 
-const STORAGE_KEY_PREFIX = 'school_classes_'
-
-function loadClasses(schoolId: string): SchoolClass[] {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY_PREFIX + schoolId) || '[]') } catch { return [] }
-}
-
-function saveClasses(schoolId: string, classes: SchoolClass[]) {
-  localStorage.setItem(STORAGE_KEY_PREFIX + schoolId, JSON.stringify(classes))
-}
-
 export default function SchoolStudents() {
   const { schoolId } = useParams<{ schoolId: string }>()
-  const [classes, setClasses] = useState<SchoolClass[]>(() => loadClasses(schoolId || ''))
+  const { currentUser } = useStore()
+  const [classes, setClasses] = useState<SchoolClass[]>(() => getSchoolClassesFromCache(schoolId || ''))
   const [pendingUpload, setPendingUpload] = useState<SchoolClass[] | null>(null)
   const [expandedClass, setExpandedClass] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (schoolId) loadSchoolClassesFromDB(schoolId).then(setClasses)
+  }, [schoolId])
 
   const totalStudents = classes.reduce((sum, c) => sum + c.students.length, 0)
 
   const update = (newClasses: SchoolClass[]) => {
     setClasses(newClasses)
-    saveClasses(schoolId || '', newClasses)
+    saveSchoolClassesToDB(schoolId || '', newClasses, currentUser?.id || '')
   }
 
   const removeStudent = (className: string, studentName: string) => {

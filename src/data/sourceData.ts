@@ -198,3 +198,130 @@ export async function saveSourceIssuesToDB(issues: string[], callerId: string): 
   })
   return result?.success || false
 }
+
+// ==================== SCHOOLS ====================
+
+interface SchoolRecord { id: string; name: string; councilId: string }
+interface SchoolClass { name: string; students: string[] }
+interface SchoolUser { id: string; fullName: string; phone: string; email: string; className: string; roles?: string[] }
+interface CouncilUser { id: string; fullName: string; phone: string; email: string; registeredAt: string }
+
+// --- Schools ---
+export async function loadSchoolsFromDB(): Promise<SchoolRecord[]> {
+  const { data } = await supabase.from('schools').select('*')
+  if (data && data.length > 0) {
+    const schools = data.map((r: any) => ({ id: r.id, name: r.name, councilId: r.council_id }))
+    localStorage.setItem('status_schools', JSON.stringify(schools))
+    return schools
+  }
+  return getSchoolsFromCache()
+}
+
+export function getSchoolsFromCache(): SchoolRecord[] {
+  try { return JSON.parse(localStorage.getItem('status_schools') || '[]') } catch { return [] }
+}
+
+export async function saveSchoolsToDB(schools: SchoolRecord[], callerId: string): Promise<boolean> {
+  localStorage.setItem('status_schools', JSON.stringify(schools))
+  const { data: result } = await supabase.rpc('save_schools', { caller_id: callerId, school_data: schools })
+  return result?.success || false
+}
+
+// --- School Classes ---
+export async function loadSchoolClassesFromDB(schoolId: string): Promise<SchoolClass[]> {
+  const { data } = await supabase.from('school_classes').select('*').eq('school_id', schoolId)
+  if (data && data.length > 0) {
+    const classes = data.map((r: any) => ({ name: r.class_name, students: r.students || [] }))
+    localStorage.setItem(`school_classes_${schoolId}`, JSON.stringify(classes))
+    return classes
+  }
+  return getSchoolClassesFromCache(schoolId)
+}
+
+export function getSchoolClassesFromCache(schoolId: string): SchoolClass[] {
+  try { return JSON.parse(localStorage.getItem(`school_classes_${schoolId}`) || '[]') } catch { return [] }
+}
+
+export async function saveSchoolClassesToDB(schoolId: string, classes: SchoolClass[], callerId: string): Promise<boolean> {
+  localStorage.setItem(`school_classes_${schoolId}`, JSON.stringify(classes))
+  const { data: result } = await supabase.rpc('save_school_classes', {
+    caller_id: callerId, p_school_id: schoolId, class_data: classes,
+  })
+  return result?.success || false
+}
+
+// --- School Users ---
+export async function loadSchoolUsersFromDB(schoolId: string): Promise<SchoolUser[]> {
+  const { data } = await supabase.from('school_users').select('*').eq('school_id', schoolId)
+  if (data && data.length > 0) {
+    const users = data.map((r: any) => ({
+      id: r.user_id, fullName: r.full_name, phone: r.phone || '', email: r.email || '',
+      className: r.class_name || '', roles: r.roles || [],
+    }))
+    localStorage.setItem(`school_users_${schoolId}`, JSON.stringify(users))
+    return users
+  }
+  return getSchoolUsersFromCache(schoolId)
+}
+
+export function getSchoolUsersFromCache(schoolId: string): SchoolUser[] {
+  try { return JSON.parse(localStorage.getItem(`school_users_${schoolId}`) || '[]') } catch { return [] }
+}
+
+export async function saveSchoolUsersToDB(schoolId: string, users: SchoolUser[], callerId: string): Promise<boolean> {
+  localStorage.setItem(`school_users_${schoolId}`, JSON.stringify(users))
+  const { data: result } = await supabase.rpc('save_school_users', {
+    caller_id: callerId, p_school_id: schoolId, user_data: users,
+  })
+  return result?.success || false
+}
+
+// --- School Attendance ---
+export async function loadSchoolAttendanceFromDB(schoolId: string, className: string, date: string): Promise<Record<string, boolean>> {
+  const { data } = await supabase.from('school_attendance').select('attendance')
+    .eq('school_id', schoolId).eq('class_name', className).eq('date', date).single()
+  if (data) {
+    const attendance = data.attendance || {}
+    localStorage.setItem(`school_attendance_${schoolId}_${className}_${date}`, JSON.stringify(attendance))
+    return attendance
+  }
+  return getSchoolAttendanceFromCache(schoolId, className, date)
+}
+
+export function getSchoolAttendanceFromCache(schoolId: string, className: string, date: string): Record<string, boolean> {
+  try { return JSON.parse(localStorage.getItem(`school_attendance_${schoolId}_${className}_${date}`) || '{}') } catch { return {} }
+}
+
+export async function saveSchoolAttendanceToDB(schoolId: string, className: string, date: string, attendance: Record<string, boolean>, callerId: string): Promise<boolean> {
+  localStorage.setItem(`school_attendance_${schoolId}_${className}_${date}`, JSON.stringify(attendance))
+  const { data: result } = await supabase.rpc('save_school_attendance', {
+    caller_id: callerId, p_school_id: schoolId, p_class_name: className, p_date: date, p_attendance: attendance,
+  })
+  return result?.success || false
+}
+
+// --- Council Users ---
+export async function loadCouncilUsersFromDB(councilId: string): Promise<CouncilUser[]> {
+  const { data } = await supabase.from('council_users').select('*').eq('council_id', councilId)
+  if (data && data.length > 0) {
+    const users = data.map((r: any) => ({
+      id: String(r.id), fullName: r.full_name, phone: r.phone || '', email: r.email || '',
+      registeredAt: r.registered_at || new Date().toISOString(),
+    }))
+    localStorage.setItem(`council_users_${councilId}`, JSON.stringify(users))
+    return users
+  }
+  return getCouncilUsersFromCache(councilId)
+}
+
+export function getCouncilUsersFromCache(councilId: string): CouncilUser[] {
+  try { return JSON.parse(localStorage.getItem(`council_users_${councilId}`) || '[]') } catch { return [] }
+}
+
+export async function saveCouncilUsersToDB(councilId: string, users: CouncilUser[], callerId: string): Promise<boolean> {
+  localStorage.setItem(`council_users_${councilId}`, JSON.stringify(users))
+  const { data: result } = await supabase.rpc('save_council_users', {
+    caller_id: callerId, p_council_id: councilId, user_data: users,
+  })
+  return result?.success || false
+}

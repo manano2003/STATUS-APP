@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useStore } from '../data/store'
+import { loadSchoolUsersFromDB, saveSchoolUsersToDB, getSchoolUsersFromCache } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
 const PERMISSION_TYPES = [
@@ -17,17 +19,14 @@ interface SchoolUser {
   roles?: string[]
 }
 
-function loadSchoolUsers(schoolId: string): SchoolUser[] {
-  try { return JSON.parse(localStorage.getItem(`school_users_${schoolId}`) || '[]') } catch { return [] }
-}
-
-function saveSchoolUsers(schoolId: string, users: SchoolUser[]) {
-  localStorage.setItem(`school_users_${schoolId}`, JSON.stringify(users))
-}
-
 export default function SchoolPermissions() {
   const { schoolId } = useParams<{ schoolId: string }>()
-  const [users, setUsers] = useState<SchoolUser[]>(() => loadSchoolUsers(schoolId || ''))
+  const { currentUser } = useStore()
+  const [users, setUsers] = useState<SchoolUser[]>(() => getSchoolUsersFromCache(schoolId || ''))
+
+  useEffect(() => {
+    if (schoolId) loadSchoolUsersFromDB(schoolId).then(u => setUsers(u as SchoolUser[]))
+  }, [schoolId])
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [search, setSearch] = useState('')
 
@@ -44,7 +43,7 @@ export default function SchoolPermissions() {
       }
     })
     setUsers(updated)
-    saveSchoolUsers(schoolId || '', updated)
+    saveSchoolUsersToDB(schoolId || '', updated, currentUser?.id || '')
   }
 
   const filtered = selectedRole ? users.filter(u => {
@@ -164,7 +163,7 @@ export default function SchoolPermissions() {
                     }
                   })
                   setUsers(updated)
-                  saveSchoolUsers(schoolId || '', updated)
+                  saveSchoolUsersToDB(schoolId || '', updated, currentUser?.id || '')
                 }}
                 style={{
                   display: 'block', width: '100%', marginBottom: '12px', padding: '10px',
