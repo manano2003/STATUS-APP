@@ -92,12 +92,15 @@ export default function SchoolManagement() {
             display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
             gap: '10px', marginBottom: '16px',
           }}>
-            {classes.map(c => {
+            {(() => {
+              const hasAnyEmergency = Object.values(emergency).some(s => s === 'protected' || s === 'not_protected')
+              return classes.map(c => {
               const eStatus = emergency[c.name]
               const isProtected = eStatus === 'protected'
               const isNotProtected = eStatus === 'not_protected'
-              const borderColor = isProtected ? 'var(--color-success)' : isNotProtected ? 'var(--color-danger)' : (expandedClass === c.name ? 'var(--color-accent)' : 'var(--color-border)')
-              const bgColor = isProtected ? 'rgba(77, 232, 138, 0.1)' : isNotProtected ? 'rgba(232, 77, 77, 0.1)' : (expandedClass === c.name ? 'rgba(77, 166, 232, 0.15)' : 'var(--color-bg-card)')
+              const noStatus = hasAnyEmergency && !isProtected && !isNotProtected
+              const borderColor = isProtected ? 'var(--color-success)' : isNotProtected ? 'var(--color-danger)' : noStatus ? '#fff' : (expandedClass === c.name ? 'var(--color-accent)' : 'var(--color-border)')
+              const bgColor = isProtected ? 'rgba(77, 232, 138, 0.1)' : isNotProtected ? 'rgba(232, 77, 77, 0.1)' : noStatus ? 'rgba(255, 255, 255, 0.08)' : (expandedClass === c.name ? 'rgba(77, 166, 232, 0.15)' : 'var(--color-bg-card)')
               const shadow = isProtected ? '0 0 12px rgba(77, 232, 138, 0.4)' : isNotProtected ? '0 0 12px rgba(232, 77, 77, 0.4)' : 'none'
               return (
               <button
@@ -146,7 +149,8 @@ export default function SchoolManagement() {
                   )
                 })()}
               </button>
-            )})}
+            )})
+            })()}
           </div>
         ) : (
           <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '16px' }}>
