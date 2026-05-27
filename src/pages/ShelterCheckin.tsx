@@ -210,10 +210,10 @@ export default function ShelterCheckin() {
           <button
             onClick={() => setShowFrameworkPopup(true)}
             style={{
-              display: 'block', width: '100%', marginTop: '12px', padding: '14px',
+              display: 'block', width: '100%', marginTop: '12px', padding: '16px 36px',
               background: 'var(--color-success)', color: '#fff', border: 'none',
-              borderRadius: 'var(--radius-sm)', fontSize: '16px', fontWeight: 800,
-              cursor: 'pointer', textAlign: 'center',
+              borderRadius: 'var(--radius)', fontSize: '18px', fontWeight: 700,
+              cursor: 'pointer', textAlign: 'center', fontFamily: 'var(--font-family)',
             }}
           >
             כניסת מסגרת למקלט
