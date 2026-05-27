@@ -451,16 +451,6 @@ export default function ShelterCheckin() {
           </Button>
         )}
 
-        <button
-          onClick={() => navigate('/report')}
-          style={{
-            display: 'block', width: '100%', marginTop: '14px',
-            background: 'none', border: 'none', color: 'var(--color-text-secondary)',
-            fontSize: '13px', cursor: 'pointer', textAlign: 'center',
-          }}
-        >
-          חזרה למקלטים
-        </button>
       </div>
     </div>
   )
