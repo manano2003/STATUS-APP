@@ -55,7 +55,7 @@ export default function Kindergartens() {
                 e.currentTarget.style.transform = 'translateY(0)'
               }}
             >
-              <p style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text)', margin: '0 0 6px' }}>
+              <p style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-text)', margin: '0 0 6px' }}>
                 {k.name}
               </p>
               <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>
