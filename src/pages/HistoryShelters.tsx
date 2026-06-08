@@ -41,7 +41,7 @@ export default function HistoryShelters() {
   const formatTime = (ts: number) => new Date(ts).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <PageLayout title="🏛️ היסטוריית נוכחות במקלטים" backTo="/dashboard/history">
+    <PageLayout title="היסטוריה" subtitle="נוכחות במקלטים" backTo="/dashboard/history">
 
       {/* Year selector */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
