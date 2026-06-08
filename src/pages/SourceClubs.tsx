@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { type Club } from '../data/clubs'
-import { getSourceClubs, saveSourceClubs, saveSourceClubsToDB } from '../data/sourceData'
+import { getSourceClubs, saveSourceClubs, saveSourceClubsToDB, loadSourceClubsFromDB } from '../data/sourceData'
 import { useStore } from '../data/store'
 import PageLayout from '../components/PageLayout'
 import * as XLSX from 'xlsx'
@@ -8,6 +8,10 @@ import * as XLSX from 'xlsx'
 export default function SourceClubs() {
   const { currentUser, addBackupClub } = useStore()
   const [data, setData] = useState<Club[]>(getSourceClubs)
+
+  useEffect(() => {
+    loadSourceClubsFromDB().then(d => { if (d.length > 0) setData(d) })
+  }, [])
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [newMember, setNewMember] = useState('')
   const [newStaff, setNewStaff] = useState('')

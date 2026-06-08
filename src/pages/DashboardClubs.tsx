@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { getSourceClubs } from '../data/sourceData'
+import { useState, useEffect } from 'react'
+import { getSourceClubs, loadSourceClubsFromDB } from '../data/sourceData'
 import { useStore } from '../data/store'
 import { supabase } from '../data/supabase'
 import PageLayout from '../components/PageLayout'
@@ -9,7 +9,11 @@ export default function DashboardClubs() {
   const { getClubAttendance, currentUser } = useStore()
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [popupType, setPopupType] = useState<'all' | 'children' | 'staff' | null>(null)
-  const clubs = getSourceClubs()
+  const [clubs, setClubs] = useState(getSourceClubs)
+
+  useEffect(() => {
+    loadSourceClubsFromDB().then(d => { if (d.length > 0) setClubs(d) })
+  }, [])
 
   const totalChildren = clubs.reduce((sum, k) => sum + k.children.length, 0)
   const totalStaff = clubs.reduce((sum, k) => sum + k.staff.length, 0)

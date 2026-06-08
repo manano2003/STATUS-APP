@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { type Kindergarten } from '../data/kindergartens'
-import { getSourceKindergartens, saveSourceKindergartens, saveSourceKindergartensToDB } from '../data/sourceData'
+import { getSourceKindergartens, saveSourceKindergartens, saveSourceKindergartensToDB, loadSourceKindergartensFromDB } from '../data/sourceData'
 import { useStore } from '../data/store'
 import PageLayout from '../components/PageLayout'
 import * as XLSX from 'xlsx'
@@ -8,6 +8,10 @@ import * as XLSX from 'xlsx'
 export default function SourceKindergartens() {
   const { currentUser, addBackupKindergarten } = useStore()
   const [data, setData] = useState<Kindergarten[]>(getSourceKindergartens)
+
+  useEffect(() => {
+    loadSourceKindergartensFromDB().then(d => { if (d.length > 0) setData(d) })
+  }, [])
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [newChild, setNewChild] = useState('')
   const [newStaff, setNewStaff] = useState('')

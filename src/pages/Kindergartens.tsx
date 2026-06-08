@@ -1,12 +1,17 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getSourceKindergartens } from '../data/sourceData'
+import { getSourceKindergartens, loadSourceKindergartensFromDB } from '../data/sourceData'
 import { useStore } from '../data/store'
 import PageLayout from '../components/PageLayout'
 
 export default function Kindergartens() {
   const navigate = useNavigate()
   const { getKindergartenAttendance } = useStore()
-  const kindergartens = getSourceKindergartens()
+  const [kindergartens, setKindergartens] = useState(getSourceKindergartens)
+
+  useEffect(() => {
+    loadSourceKindergartensFromDB().then(d => { if (d.length > 0) setKindergartens(d) })
+  }, [])
 
   const totalPresent = kindergartens.reduce((sum, k) => {
     const att = getKindergartenAttendance(k.id)

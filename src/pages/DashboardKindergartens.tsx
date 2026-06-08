@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { getSourceKindergartens } from '../data/sourceData'
+import { useState, useEffect } from 'react'
+import { getSourceKindergartens, loadSourceKindergartensFromDB } from '../data/sourceData'
 import { useStore } from '../data/store'
 import { supabase } from '../data/supabase'
 import PageLayout from '../components/PageLayout'
@@ -9,7 +9,11 @@ export default function DashboardKindergartens() {
   const { getKindergartenAttendance, currentUser } = useStore()
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [popupType, setPopupType] = useState<'all' | 'children' | 'staff' | null>(null)
-  const kindergartens = getSourceKindergartens()
+  const [kindergartens, setKindergartens] = useState(getSourceKindergartens)
+
+  useEffect(() => {
+    loadSourceKindergartensFromDB().then(d => { if (d.length > 0) setKindergartens(d) })
+  }, [])
 
   const totalChildren = kindergartens.reduce((sum, k) => sum + k.children.length, 0)
   const totalStaff = kindergartens.reduce((sum, k) => sum + k.staff.length, 0)

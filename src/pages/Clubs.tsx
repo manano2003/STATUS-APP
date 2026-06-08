@@ -1,12 +1,17 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getSourceClubs } from '../data/sourceData'
+import { getSourceClubs, loadSourceClubsFromDB } from '../data/sourceData'
 import { useStore } from '../data/store'
 import PageLayout from '../components/PageLayout'
 
 export default function Clubs() {
   const navigate = useNavigate()
   const { getClubAttendance } = useStore()
-  const clubs = getSourceClubs()
+  const [clubs, setClubs] = useState(getSourceClubs)
+
+  useEffect(() => {
+    loadSourceClubsFromDB().then(d => { if (d.length > 0) setClubs(d) })
+  }, [])
 
   const totalPresent = clubs.reduce((sum, k) => {
     const att = getClubAttendance(k.id)
