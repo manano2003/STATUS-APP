@@ -497,7 +497,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         // Expand into per-shelter snapshots for calendar view
         const snapshots: ShelterDailySnapshot[] = []
         data.forEach(row => {
-          const snapshotData = row.snapshot_data as any[]
+          let snapshotData = row.snapshot_data as any
+          if (typeof snapshotData === 'string') { try { snapshotData = JSON.parse(snapshotData) } catch { return } }
           const date = new Date(row.created_at).toISOString().split('T')[0]
           if (snapshotData && Array.isArray(snapshotData)) {
             snapshotData.forEach((s: any) => {
@@ -705,7 +706,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const totalPeople = checkins.reduce((sum, c) => sum + c.peopleCount, 0)
       const { data: histData } = await supabase.rpc('secure_save_shelter_history', {
         caller_id: currentUser?.id,
-        p_snapshot_data: JSON.stringify(snapshotData),
+        p_snapshot_data: snapshotData,
         p_total_people: totalPeople,
       })
       if (histData?.success && histData.history) {
