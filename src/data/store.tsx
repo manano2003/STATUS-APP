@@ -83,6 +83,7 @@ export const EMERGENCY_STATUS_COLORS: Record<EmergencyStatusType, string> = {
 export interface ShelterDailySnapshot {
   id: string
   shelterId: string
+  shelterName?: string
   date: string
   checkins: { userName: string; userPhone: string; userHouseNumber: string; peopleCount: number; isGuest?: boolean }[]
   timestamp: number
@@ -506,6 +507,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 snapshots.push({
                   id: row.id + '_' + s.shelterId,
                   shelterId: s.shelterId,
+                  shelterName: s.shelterName || s.shelterId,
                   date,
                   checkins: s.checkins,
                   timestamp: new Date(row.created_at).getTime(),
@@ -689,10 +691,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const clearAllCheckins = useCallback(async (saveToHistory: boolean = true) => {
     // Save snapshot to history before clearing
     if (saveToHistory && checkins.length > 0) {
+      const { getSheltersWithSourceData } = await import('../data/shelters')
+      const allShelters = getSheltersWithSourceData()
       const shelterMap: Record<string, { shelterId: string; shelterName: string; checkins: any[] }> = {}
       checkins.forEach(c => {
         if (!shelterMap[c.shelterId]) {
-          shelterMap[c.shelterId] = { shelterId: c.shelterId, shelterName: c.shelterId, checkins: [] }
+          const shelter = allShelters.find(s => s.id === c.shelterId)
+          shelterMap[c.shelterId] = { shelterId: c.shelterId, shelterName: shelter?.name || c.shelterId, checkins: [] }
         }
         shelterMap[c.shelterId].checkins.push({
           userName: c.userName,

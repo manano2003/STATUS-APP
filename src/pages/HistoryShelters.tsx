@@ -147,21 +147,22 @@ export default function HistoryShelters() {
                   </p>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {allShelters.map(shelter => {
-                      const snapshot = snapshots.find(s => s.shelterId === shelter.id)
-                      if (!snapshot || snapshot.checkins.length === 0) return null
-                      const isExpanded = expandedShelter === shelter.id
+                    {snapshots.filter(s => s.checkins.length > 0).map(snapshot => {
+                      const shelter = allShelters.find(sh => sh.id === snapshot.shelterId) || allShelters.find(sh => sh.name === snapshot.shelterName)
+                      const displayName = shelter?.name || snapshot.shelterName || 'מקלט'
+                      const displayNumber = shelter?.number || ''
+                      const isExpanded = expandedShelter === snapshot.shelterId
                       const shelterPeople = snapshot.checkins.reduce((sum, c) => sum + c.peopleCount, 0)
                       return (
-                        <div key={shelter.id}>
-                          <button onClick={() => setExpandedShelter(isExpanded ? null : shelter.id)} style={{
+                        <div key={snapshot.shelterId}>
+                          <button onClick={() => setExpandedShelter(isExpanded ? null : snapshot.shelterId)} style={{
                             display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
                             padding: '14px', background: 'var(--color-bg-card)',
                             border: `1px solid ${isExpanded ? 'var(--color-accent)' : 'var(--color-border)'}`, borderRadius: 'var(--radius)',
                             cursor: 'pointer', textAlign: 'right', color: 'var(--color-text)',
                           }}>
-                            <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', minWidth: '20px' }}>{shelter.number}</span>
-                            <span style={{ fontSize: '14px', fontWeight: 700, flex: 1 }}>{shelter.name}</span>
+                            {displayNumber && <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', minWidth: '20px' }}>{displayNumber}</span>}
+                            <span style={{ fontSize: '14px', fontWeight: 700, flex: 1 }}>{displayName}</span>
                             <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-success)' }}>{shelterPeople} נפשות</span>
                           </button>
                           {isExpanded && (
