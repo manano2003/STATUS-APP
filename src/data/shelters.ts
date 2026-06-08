@@ -57,11 +57,11 @@ export const specialStatuses = shelters.filter(s => s.isSpecialStatus)
 
 // Dynamic getters that use source data with fallback to hardcoded
 export function getRegularShelters(): Shelter[] {
-  return getSheltersWithSourceData().filter(s => !s.isSpecialStatus)
+  return getSheltersWithSourceData().filter(s => !s.isSpecialStatus).sort((a, b) => a.number - b.number)
 }
 
 export function getSpecialStatuses(): Shelter[] {
-  return getSheltersWithSourceData().filter(s => s.isSpecialStatus)
+  return getSheltersWithSourceData().filter(s => s.isSpecialStatus).sort((a, b) => a.number - b.number)
 }
 
 export function getShelterById(id: string): Shelter | undefined {
