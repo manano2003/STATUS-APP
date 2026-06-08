@@ -12,6 +12,7 @@ export default function DashboardShelters() {
   const { getShelterPeopleCount, getShelterCheckins, clearAllCheckins } = useStore()
   const [search, setSearch] = useState('')
   const [popupShelterId, setPopupShelterId] = useState<string | null>(null)
+  const [showResetPopup, setShowResetPopup] = useState(false)
   const regularShelters = getRegularShelters()
   const specialStatuses = getSpecialStatuses()
 
@@ -343,17 +344,54 @@ export default function DashboardShelters() {
       </div>
 
       <button
-        onClick={() => { if (confirm('האם לאפס את כל הנוכחות במקלטים?')) clearAllCheckins() }}
+        onClick={() => setShowResetPopup(true)}
         style={{
           display: 'block', width: '100%', marginTop: '16px', padding: '14px',
           borderRadius: 'var(--radius)',
           border: '1px solid rgba(232, 77, 77, 0.3)',
           background: 'rgba(232, 77, 77, 0.08)',
           color: 'var(--color-danger)', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+          fontFamily: 'var(--font-family)',
         }}
       >
         איפוס כלל הנוכחות במקלטים
       </button>
+
+      {/* Reset confirmation popup */}
+      {showResetPopup && (
+        <div onClick={() => setShowResetPopup(false)} style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 9999, padding: '20px',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: 'var(--color-bg-card)', borderRadius: 'var(--radius)',
+            border: '2px solid var(--color-danger)', padding: '28px 24px', textAlign: 'center',
+            width: '100%', maxWidth: '360px',
+          }}>
+            <p style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-danger)', margin: '0 0 20px' }}>
+              האם אירוע אמת נגמר?
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button onClick={() => { clearAllCheckins(true); setShowResetPopup(false) }} style={{
+                padding: '14px', borderRadius: 'var(--radius-sm)',
+                background: 'var(--color-accent)', color: '#fff', border: 'none',
+                fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-family)',
+              }}>
+                אפס ושמור בהיסטוריה
+              </button>
+              <button onClick={() => { clearAllCheckins(false); setShowResetPopup(false) }} style={{
+                padding: '14px', borderRadius: 'var(--radius-sm)',
+                background: 'transparent', color: 'var(--color-text-secondary)',
+                border: '1px solid var(--color-border)',
+                fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-family)',
+              }}>
+                אפס ואל תשמור בהיסטוריה
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ExportButtons
         title="דוח נוכחות במקלטים"

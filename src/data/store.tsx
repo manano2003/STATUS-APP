@@ -199,7 +199,7 @@ interface StoreState {
   lastCheckinUserId: string | null
   deleteUser: (userId: string) => void
   removeCheckin: (userId: string) => void
-  clearAllCheckins: () => void
+  clearAllCheckins: (saveToHistory?: boolean) => void
   clearShelterCheckins: (shelterId: string) => void
   distressAlerts: DistressAlert[]
   addDistressAlert: (alert: DistressAlert) => void
@@ -686,9 +686,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     })
   }, [currentUser])
 
-  const clearAllCheckins = useCallback(async () => {
+  const clearAllCheckins = useCallback(async (saveToHistory: boolean = true) => {
     // Save snapshot to history before clearing
-    if (checkins.length > 0) {
+    if (saveToHistory && checkins.length > 0) {
       const shelterMap: Record<string, { shelterId: string; shelterName: string; checkins: any[] }> = {}
       checkins.forEach(c => {
         if (!shelterMap[c.shelterId]) {
