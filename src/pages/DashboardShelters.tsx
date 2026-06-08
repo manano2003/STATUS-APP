@@ -194,7 +194,7 @@ export default function DashboardShelters() {
                 background: 'var(--color-bg-card)',
                 border: '1px solid var(--color-border)',
                 borderRadius: 'var(--radius)',
-                padding: '10px 8px',
+                padding: '14px 10px',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
               }}
@@ -209,14 +209,14 @@ export default function DashboardShelters() {
                 e.currentTarget.style.boxShadow = 'none'
               }}
             >
-              <p style={{ fontSize: '12px', fontWeight: 800, margin: '0 0 4px', textAlign: 'center' }}>{shelter.name}</p>
-              <div style={{ textAlign: 'center', marginBottom: '6px' }}>
-                <span style={{ fontSize: '24px', fontWeight: 800, color: count > 0 ? traffic.color : 'var(--color-text-secondary)' }}>{count}</span>
+              <p style={{ fontSize: '14px', fontWeight: 800, margin: '0 0 6px', textAlign: 'center' }}>{shelter.name}</p>
+              <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '28px', fontWeight: 800, color: count > 0 ? traffic.color : 'var(--color-text-secondary)' }}>{count}</span>
               </div>
-              <div style={{ width: '100%', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: '4px' }}>
-                <div style={{ width: `${barPercent}%`, height: '100%', borderRadius: '2px', background: traffic.color, opacity: 0.3 + (barPercent / 100) * 0.7, transition: 'width 0.3s ease' }} />
+              <div style={{ width: '100%', height: '5px', borderRadius: '3px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: '6px' }}>
+                <div style={{ width: `${barPercent}%`, height: '100%', borderRadius: '3px', background: traffic.color, opacity: 0.3 + (barPercent / 100) * 0.7, transition: 'width 0.3s ease' }} />
               </div>
-              <span style={{ display: 'block', textAlign: 'center', padding: '1px 0', fontSize: '9px', fontWeight: 700, color: traffic.color }}>{traffic.label}</span>
+              <span style={{ display: 'block', textAlign: 'center', padding: '1px 0', fontSize: '10px', fontWeight: 700, color: traffic.color }}>{traffic.label}</span>
             </div>
           )
         })}
@@ -233,18 +233,18 @@ export default function DashboardShelters() {
                 background: 'var(--color-bg-card)',
                 border: '1px solid rgba(232, 197, 77, 0.3)',
                 borderRadius: 'var(--radius)',
-                padding: '10px 8px',
+                padding: '14px 10px',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
               }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-warning)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(232, 197, 77, 0.3)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
             >
-              <p style={{ fontSize: '12px', fontWeight: 800, margin: '0 0 4px', textAlign: 'center' }}>{status.name}</p>
-              <div style={{ textAlign: 'center', marginBottom: '4px' }}>
-                <span style={{ fontSize: '24px', fontWeight: 800, color: count > 0 ? 'var(--color-warning)' : 'var(--color-text-secondary)' }}>{count}</span>
+              <p style={{ fontSize: '14px', fontWeight: 800, margin: '0 0 6px', textAlign: 'center' }}>{status.name}</p>
+              <div style={{ textAlign: 'center', marginBottom: '6px' }}>
+                <span style={{ fontSize: '28px', fontWeight: 800, color: count > 0 ? 'var(--color-warning)' : 'var(--color-text-secondary)' }}>{count}</span>
               </div>
-              <span style={{ display: 'block', textAlign: 'center', fontSize: '9px', fontWeight: 700, color: traffic.color }}>{traffic.label}</span>
+              <span style={{ display: 'block', textAlign: 'center', fontSize: '10px', fontWeight: 700, color: traffic.color }}>{traffic.label}</span>
             </div>
           )
         })}
@@ -398,7 +398,7 @@ export default function DashboardShelters() {
         @media (min-width: 768px) {
           .shelter-dashboard-grid {
             display: grid !important;
-            grid-template-columns: repeat(8, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 14px;
             margin-bottom: 16px;
           }
