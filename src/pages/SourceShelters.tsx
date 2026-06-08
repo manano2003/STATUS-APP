@@ -11,7 +11,8 @@ export default function SourceShelters() {
   const { currentUser } = useStore()
   const [data, setData] = useState<Shelter[]>(() => {
     const source = getSourceShelters()
-    return source.length > 0 ? source : defaultShelters
+    const list = source.length > 0 ? source : defaultShelters
+    return [...list].sort((a, b) => a.number - b.number)
   })
   const [pendingUpload, setPendingUpload] = useState<Shelter[] | null>(null)
   const [newName, setNewName] = useState('')
@@ -69,7 +70,7 @@ export default function SourceShelters() {
   const specialStatuses = data.filter(s => s.isSpecialStatus)
 
   const update = (newData: Shelter[]) => {
-    setData(newData)
+    setData([...newData].sort((a, b) => a.number - b.number))
     saveSourceShelters(newData)
     if (currentUser?.id) saveSourceSheltersToDB(newData, currentUser.id)
   }
