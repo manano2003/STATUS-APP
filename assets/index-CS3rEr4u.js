@@ -239,7 +239,7 @@ ${n}`);window.open(`https://wa.me/?text=${s}`,"_blank")},style:{flex:1,padding:"
         @media (min-width: 768px) {
           .shelter-dashboard-grid {
             display: grid !important;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 14px;
             margin-bottom: 16px;
           }
