@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStore } from '../data/store'
 import { supabase } from '../data/supabase'
-import { loadSchoolClassesFromDB, getSchoolClassesFromCache, loadSchoolEmergencyFromDB, getSchoolEmergencyFromCache, saveSchoolEmergencyToDB, loadSchoolUsersFromDB, getSchoolUsersFromCache, loadSchoolAttendanceFromDB } from '../data/sourceData'
+import { loadSchoolClassesFromDB, getSchoolClassesFromCache, loadSchoolEmergencyFromDB, getSchoolEmergencyFromCache, saveSchoolEmergencyToDB, loadSchoolUsersFromDB, getSchoolUsersFromCache, loadSchoolAttendanceFromDB, saveSchoolAttendanceToDB } from '../data/sourceData'
 import SchoolHome from './SchoolHome'
 
 interface SchoolClass {
@@ -51,6 +51,7 @@ export default function SchoolManagement() {
     return () => { supabase.removeChannel(channel) }
   }, [schoolId])
   const [expandedClass, setExpandedClass] = useState<string | null>(null)
+  const [showResetPopup, setShowResetPopup] = useState(false)
 
   const totalStudents = classes.reduce((sum, c) => sum + c.students.length, 0)
 
@@ -301,6 +302,74 @@ export default function SchoolManagement() {
             </div>
           )
         })()}
+
+        {/* Reset attendance button */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+          <button
+            onClick={() => setShowResetPopup(true)}
+            style={{
+              background: 'transparent', color: 'var(--color-warning)',
+              border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-sm)',
+              padding: '10px 28px', fontSize: '14px', fontWeight: 700,
+              cursor: 'pointer', fontFamily: 'var(--font-family)',
+            }}
+          >
+            איפוס נוכחות
+          </button>
+        </div>
+
+        {/* Reset attendance popup */}
+        {showResetPopup && (
+          <div onClick={() => setShowResetPopup(false)} style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999, padding: '20px',
+          }}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--color-bg-card)', borderRadius: 'var(--radius)',
+              border: '2px solid var(--color-warning)', padding: '28px 24px', textAlign: 'center',
+              width: '100%', maxWidth: '360px',
+            }}>
+              <p style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-warning)', margin: '0 0 20px' }}>
+                האם לשמור בהיסטוריה?
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <button onClick={async () => {
+                  if (!schoolId) return
+                  // TODO: save to school history table before clearing
+                  const today = new Date().toISOString().split('T')[0]
+                  for (const c of classes) {
+                    await saveSchoolAttendanceToDB(schoolId, c.name, today, {}, currentUser?.id || '')
+                  }
+                  setAttendanceMap({})
+                  setShowResetPopup(false)
+                }} style={{
+                  padding: '14px', borderRadius: 'var(--radius-sm)',
+                  background: 'var(--color-accent)', color: '#fff', border: 'none',
+                  fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-family)',
+                }}>
+                  כן — אפס ושמור בהיסטוריה
+                </button>
+                <button onClick={async () => {
+                  if (!schoolId) return
+                  const today = new Date().toISOString().split('T')[0]
+                  for (const c of classes) {
+                    await saveSchoolAttendanceToDB(schoolId, c.name, today, {}, currentUser?.id || '')
+                  }
+                  setAttendanceMap({})
+                  setShowResetPopup(false)
+                }} style={{
+                  padding: '14px', borderRadius: 'var(--radius-sm)',
+                  background: 'transparent', color: 'var(--color-text-secondary)',
+                  border: '1px solid var(--color-border)',
+                  fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-family)',
+                }}>
+                  לא — אפס ושלח לגיבוי
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Quick access buttons */}
         <div style={{ display: 'flex', gap: '10px', marginTop: '30px', flexWrap: 'wrap' }}>
