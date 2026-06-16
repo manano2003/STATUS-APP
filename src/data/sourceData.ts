@@ -212,6 +212,13 @@ export async function loadSchoolsFromDB(): Promise<SchoolRecord[]> {
   if (data && data.length > 0) {
     const schools = data.map((r: any) => ({ id: r.id, name: r.name, councilId: r.council_id }))
     localStorage.setItem('status_schools', JSON.stringify(schools))
+    // Sync logos from DB
+    const logos: Record<string, string> = {}
+    data.forEach((r: any) => { if (r.logo_url) logos[r.id] = r.logo_url })
+    if (Object.keys(logos).length > 0) {
+      const existing = JSON.parse(localStorage.getItem('school_logos') || '{}')
+      localStorage.setItem('school_logos', JSON.stringify({ ...existing, ...logos }))
+    }
     return schools
   }
   return getSchoolsFromCache()

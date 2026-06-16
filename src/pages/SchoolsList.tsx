@@ -25,7 +25,11 @@ export default function SchoolsList() {
   })
 
   useEffect(() => {
-    loadSchoolsFromDB().then(s => { if (s.length > 0) setSchools(s) })
+    loadSchoolsFromDB().then(s => {
+      if (s.length > 0) setSchools(s)
+      // Refresh logos from DB sync
+      try { setLogos(JSON.parse(localStorage.getItem('school_logos') || '{}')) } catch {}
+    })
     const channel = supabase.channel('schools-list')
       .on('postgres_changes', { event: '*', schema: 'status', table: 'schools' }, () => {
         loadSchoolsFromDB().then(s => { if (s.length > 0) setSchools(s) })
@@ -57,6 +61,8 @@ export default function SchoolsList() {
       const newLogos = { ...logos, [uploadingId]: dataUrl }
       setLogos(newLogos)
       localStorage.setItem('school_logos', JSON.stringify(newLogos))
+      // Save logo to DB
+      supabase.from('schools').update({ logo_url: dataUrl }).eq('id', uploadingId).then(() => {})
     }
     reader.readAsDataURL(file)
     e.target.value = ''

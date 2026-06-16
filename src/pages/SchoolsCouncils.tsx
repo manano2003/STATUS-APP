@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../data/supabase'
 import PageLayout from '../components/PageLayout'
 
 const LOGOS_KEY = 'council_logos'
@@ -19,6 +20,18 @@ export default function SchoolsCouncils() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploadingId, setUploadingId] = useState<string | null>(null)
 
+  useEffect(() => {
+    supabase.from('app_settings').select('key,value').like('key', 'council_logo_%').then(({ data }) => {
+      if (data && data.length > 0) {
+        const dbLogos: Record<string, string> = {}
+        data.forEach((r: any) => { dbLogos[r.key.replace('council_logo_', '')] = r.value })
+        const merged = { ...logos, ...dbLogos }
+        setLogos(merged)
+        localStorage.setItem(LOGOS_KEY, JSON.stringify(merged))
+      }
+    })
+  }, [])
+
   const handleImageClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
     setUploadingId(id)
@@ -34,6 +47,7 @@ export default function SchoolsCouncils() {
       const newLogos = { ...logos, [uploadingId]: dataUrl }
       setLogos(newLogos)
       localStorage.setItem(LOGOS_KEY, JSON.stringify(newLogos))
+      supabase.from('app_settings').upsert({ key: `council_logo_${uploadingId}`, value: dataUrl }).then(() => {})
     }
     reader.readAsDataURL(file)
     e.target.value = ''
