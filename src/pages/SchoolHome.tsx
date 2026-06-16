@@ -67,7 +67,7 @@ export default function SchoolHome({ content, backTo }: { content?: React.ReactN
         padding: '12px 16px', borderBottom: '1px solid var(--color-border)',
         textAlign: 'center',
       }}>
-        <BackButton to={backTo || (currentTab === 'home' ? '/schools/councils' : `/schools/${schoolId}/management`)} />
+        <BackButton to={backTo || (currentTab === 'home' ? '/schools/councils' : currentTab === 'management' ? `/schools/council/${councilId}` : `/schools/${schoolId}/management`)} />
         <h1 style={{ fontSize: '22px', fontWeight: 800, margin: 0, textAlign: 'center' }}>
           {schoolName}
         </h1>
