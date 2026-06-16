@@ -1,5 +1,23 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import { supabase } from './supabase'
+import { writeOrQueue } from './outbox'
+import { showSaveStatus } from '../components/SaveIndicator'
+
+async function safeRpc(rpcName: string, params: Record<string, any>): Promise<any> {
+  showSaveStatus('saving')
+  try {
+    const { data, error } = await supabase.rpc(rpcName, params)
+    if (error) throw error
+    showSaveStatus('saved')
+    return data
+  } catch (err: any) {
+    const result = await writeOrQueue(rpcName, params)
+    if (result === null) {
+      showSaveStatus('failed', 'יישלח כשהרשת תחזור')
+    }
+    return result
+  }
+}
 // sourceData imports removed - using direct localStorage for restore reliability
 
 export interface User {
@@ -573,7 +591,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const updateUser = useCallback(async (user: User) => {
-    await supabase.rpc('secure_update_user', {
+    await safeRpc('secure_update_user', {
       caller_id: currentUser?.id || user.id,
       target_id: user.id,
       p_email: user.email,
@@ -626,7 +644,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [currentUser])
 
   const updateUserRoles = useCallback(async (userId: string, newRoles: string[]) => {
-    await supabase.rpc('update_roles', { caller_id: currentUser?.id, target_user_id: userId, new_roles: newRoles })
+    await safeRpc('update_roles', { caller_id: currentUser?.id, target_user_id: userId, new_roles: newRoles })
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, roles: newRoles } : u))
     setCurrentUser(currentUser && currentUser.id === userId ? { ...currentUser, roles: newRoles } : currentUser)
   }, [currentUser])
@@ -637,7 +655,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setLastCheckinUserId(checkin.userId)
     localStorage.setItem('lastCheckinUserId', checkin.userId)
 
-    const { data } = await supabase.rpc('secure_add_checkin', {
+    const data = await safeRpc('secure_add_checkin', {
       caller_id: checkin.userId,
       p_shelter_id: checkin.shelterId,
       p_user_id: checkin.userId,
@@ -677,7 +695,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const removeCheckin = useCallback(async (userId: string) => {
-    await supabase.rpc('secure_remove_checkin', {
+    await safeRpc('secure_remove_checkin', {
       caller_id: currentUser?.id || userId,
       p_user_id: userId,
     })
@@ -881,7 +899,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // --- Kindergarten Attendance ---
 
   const setKindergartenAttendance = useCallback(async (attendance: KindergartenAttendance) => {
-    await supabase.rpc('secure_set_kindergarten_attendance', {
+    await safeRpc('secure_set_kindergarten_attendance', {
       caller_id: currentUser?.id || 'unknown',
       p_kindergarten_id: attendance.kindergartenId,
       p_present_children: attendance.presentChildren,
@@ -921,7 +939,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // --- Emergency Statuses ---
 
   const setResidentStatus = useCallback(async (status: ResidentEmergencyStatus) => {
-    await supabase.rpc('secure_set_resident_status', {
+    await safeRpc('secure_set_resident_status', {
       caller_id: currentUser?.id || 'unknown',
       p_resident_id: status.residentId,
       p_status: status.status,
@@ -957,7 +975,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [currentUser])
 
   const removeResidentStatus = useCallback(async (residentId: string) => {
-    await supabase.rpc('secure_remove_resident_status', {
+    await safeRpc('secure_remove_resident_status', {
       caller_id: currentUser?.id || 'unknown',
       p_resident_id: residentId,
     })
@@ -967,7 +985,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // --- Clubs (local only for now) ---
 
   const setClubAttendance = useCallback(async (attendance: KindergartenAttendance) => {
-    await supabase.rpc('secure_set_club_attendance', {
+    await safeRpc('secure_set_club_attendance', {
       caller_id: currentUser?.id || 'unknown',
       p_club_id: attendance.kindergartenId,
       p_present_children: attendance.presentChildren,
@@ -1042,7 +1060,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [currentUser])
 
   const permanentDeleteKindergarten = useCallback(async (backupId: string) => {
-    await supabase.rpc('secure_delete_backup_kg', {
+    await safeRpc('secure_delete_backup_kg', {
       caller_id: currentUser?.id || 'unknown',
       p_backup_id: backupId,
     })
@@ -1090,7 +1108,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [currentUser])
 
   const permanentDeleteClub = useCallback(async (backupId: string) => {
-    await supabase.rpc('secure_delete_backup_club', {
+    await safeRpc('secure_delete_backup_club', {
       caller_id: currentUser?.id || 'unknown',
       p_backup_id: backupId,
     })

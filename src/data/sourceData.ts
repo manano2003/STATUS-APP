@@ -1,6 +1,7 @@
 import { type Kindergarten } from './kindergartens'
 import { type Club } from './clubs'
 import { type Shelter } from './shelters'
+import { writeOrQueue } from './outbox'
 import { supabase } from './supabase'
 
 const KG_CACHE_KEY = 'source_kindergartens'
@@ -41,7 +42,7 @@ export async function loadSourceClubsFromDB(): Promise<Club[]> {
 // Save to DB + localStorage
 export async function saveSourceKindergartensToDB(data: Kindergarten[], callerId: string): Promise<boolean> {
   localStorage.setItem(KG_CACHE_KEY, JSON.stringify(data))
-  const { data: result } = await supabase.rpc('save_source_kindergartens', {
+  const result = await writeOrQueue('save_source_kindergartens', {
     caller_id: callerId,
     kg_data: data,
   })
@@ -50,7 +51,7 @@ export async function saveSourceKindergartensToDB(data: Kindergarten[], callerId
 
 export async function saveSourceClubsToDB(data: Club[], callerId: string): Promise<boolean> {
   localStorage.setItem(CLUBS_CACHE_KEY, JSON.stringify(data))
-  const { data: result } = await supabase.rpc('save_source_clubs', {
+  const result = await writeOrQueue('save_source_clubs', {
     caller_id: callerId,
     club_data: data,
   })
@@ -110,7 +111,7 @@ export async function loadSourceSheltersFromDB(): Promise<Shelter[]> {
 
 export async function saveSourceSheltersToDB(data: Shelter[], callerId: string): Promise<boolean> {
   localStorage.setItem(SHELTERS_CACHE_KEY, JSON.stringify(data))
-  const { data: result } = await supabase.rpc('save_source_shelters', {
+  const result = await writeOrQueue('save_source_shelters', {
     caller_id: callerId,
     shelter_data: data,
   })
@@ -157,7 +158,7 @@ export function saveSourceResidents(names: string[]) {
 
 export async function saveSourceResidentsToDB(names: string[], callerId: string): Promise<boolean> {
   localStorage.setItem(RESIDENTS_CACHE_KEY, JSON.stringify(names))
-  const { data: result } = await supabase.rpc('save_source_residents', {
+  const result = await writeOrQueue('save_source_residents', {
     caller_id: callerId,
     resident_data: names,
   })
@@ -192,7 +193,7 @@ export function saveSourceIssues(issues: string[]) {
 
 export async function saveSourceIssuesToDB(issues: string[], callerId: string): Promise<boolean> {
   localStorage.setItem(ISSUES_CACHE_KEY, JSON.stringify(issues))
-  const { data: result } = await supabase.rpc('save_source_issues', {
+  const result = await writeOrQueue('save_source_issues', {
     caller_id: callerId,
     issue_data: issues.map((text, i) => ({ issue_text: text, sort_order: i })),
   })
@@ -230,8 +231,7 @@ export function getSchoolsFromCache(): SchoolRecord[] {
 
 export async function saveSchoolsToDB(schools: SchoolRecord[], callerId: string): Promise<boolean> {
   localStorage.setItem('status_schools', JSON.stringify(schools))
-  const { data: result, error } = await supabase.rpc('save_schools', { caller_id: callerId, school_data: JSON.parse(JSON.stringify(schools)) })
-  if (error) console.error('saveSchoolsToDB error:', error)
+  const result = await writeOrQueue('save_schools', { caller_id: callerId, school_data: JSON.parse(JSON.stringify(schools)) })
   return result?.success || false
 }
 
@@ -252,7 +252,7 @@ export function getSchoolClassesFromCache(schoolId: string): SchoolClass[] {
 
 export async function saveSchoolClassesToDB(schoolId: string, classes: SchoolClass[], callerId: string): Promise<boolean> {
   localStorage.setItem(`school_classes_${schoolId}`, JSON.stringify(classes))
-  const { data: result } = await supabase.rpc('save_school_classes', {
+  const result = await writeOrQueue('save_school_classes', {
     caller_id: callerId, p_school_id: schoolId, class_data: classes,
   })
   return result?.success || false
@@ -278,7 +278,7 @@ export function getSchoolUsersFromCache(schoolId: string): SchoolUser[] {
 
 export async function saveSchoolUsersToDB(schoolId: string, users: SchoolUser[], callerId: string): Promise<boolean> {
   localStorage.setItem(`school_users_${schoolId}`, JSON.stringify(users))
-  const { data: result } = await supabase.rpc('save_school_users', {
+  const result = await writeOrQueue('save_school_users', {
     caller_id: callerId, p_school_id: schoolId, user_data: users,
   })
   return result?.success || false
@@ -302,7 +302,7 @@ export function getSchoolAttendanceFromCache(schoolId: string, className: string
 
 export async function saveSchoolAttendanceToDB(schoolId: string, className: string, date: string, attendance: Record<string, boolean>, callerId: string): Promise<boolean> {
   localStorage.setItem(`school_attendance_${schoolId}_${className}_${date}`, JSON.stringify(attendance))
-  const { data: result } = await supabase.rpc('save_school_attendance', {
+  const result = await writeOrQueue('save_school_attendance', {
     caller_id: callerId, p_school_id: schoolId, p_class_name: className, p_date: date, p_attendance: attendance,
   })
   return result?.success || false
@@ -328,7 +328,7 @@ export function getCouncilUsersFromCache(councilId: string): CouncilUser[] {
 
 export async function saveCouncilUsersToDB(councilId: string, users: CouncilUser[], callerId: string): Promise<boolean> {
   localStorage.setItem(`council_users_${councilId}`, JSON.stringify(users))
-  const { data: result } = await supabase.rpc('save_council_users', {
+  const result = await writeOrQueue('save_council_users', {
     caller_id: callerId, p_council_id: councilId, user_data: users,
   })
   return result?.success || false
@@ -354,7 +354,7 @@ export async function saveSchoolEmergencyToDB(schoolId: string, className: strin
   const cache = getSchoolEmergencyFromCache(schoolId)
   cache[className] = status
   localStorage.setItem(`school_emergency_${schoolId}`, JSON.stringify(cache))
-  const { data: result } = await supabase.rpc('save_school_emergency', {
+  const result = await writeOrQueue('save_school_emergency', {
     caller_id: callerId, p_school_id: schoolId, p_class_name: className, p_status: status,
   })
   return result?.success || false

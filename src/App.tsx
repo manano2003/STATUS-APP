@@ -3,6 +3,10 @@ import { useStore } from './data/store'
 import Header from './components/Header'
 import BottomNav from './components/BottomNav'
 import PageId from './components/PageId'
+import SaveIndicator from './components/SaveIndicator'
+import { startAutoDrain } from './data/outbox'
+
+startAutoDrain()
 import Landing from './pages/Landing'
 import Welcome from './pages/Welcome'
 import Login from './pages/Login'
@@ -196,6 +200,7 @@ export default function App() {
         <Route path="/admin/users" element={<ProtectedRoute feature="admin"><AdminUsers /></ProtectedRoute>} />
         <Route path="/admin/shelters" element={<ProtectedRoute feature="admin"><AdminShelters /></ProtectedRoute>} />
       </Routes>
+      <SaveIndicator />
       <BottomNav />
     </>
   )
