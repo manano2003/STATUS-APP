@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useStore } from '../data/store'
 import { supabase } from '../data/supabase'
+import { writeOrQueue } from '../data/outbox'
 import SchoolHome from './SchoolHome'
 
 interface BackupClass {
@@ -52,14 +53,14 @@ export default function SchoolBackup() {
 
   const restoreClass = async (backupId: number) => {
     setLoading(true)
-    await supabase.rpc('restore_school_class', { caller_id: currentUser?.id || '', p_backup_id: backupId })
+    await writeOrQueue('restore_school_class', { caller_id: currentUser?.id || '', p_backup_id: backupId })
     await loadBackups()
     setLoading(false)
   }
 
   const permanentDeleteClass = async (backupId: number) => {
     setLoading(true)
-    await supabase.rpc('permanent_delete_school_class', { caller_id: currentUser?.id || '', p_backup_id: backupId })
+    await writeOrQueue('permanent_delete_school_class', { caller_id: currentUser?.id || '', p_backup_id: backupId })
     setConfirmDelete(null)
     await loadBackups()
     setLoading(false)
@@ -67,14 +68,14 @@ export default function SchoolBackup() {
 
   const restoreUser = async (backupId: number) => {
     setLoading(true)
-    await supabase.rpc('restore_school_user', { caller_id: currentUser?.id || '', p_backup_id: backupId })
+    await writeOrQueue('restore_school_user', { caller_id: currentUser?.id || '', p_backup_id: backupId })
     await loadBackups()
     setLoading(false)
   }
 
   const permanentDeleteUser = async (backupId: number) => {
     setLoading(true)
-    await supabase.rpc('permanent_delete_school_user', { caller_id: currentUser?.id || '', p_backup_id: backupId })
+    await writeOrQueue('permanent_delete_school_user', { caller_id: currentUser?.id || '', p_backup_id: backupId })
     setConfirmDelete(null)
     await loadBackups()
     setLoading(false)

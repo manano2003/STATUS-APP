@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getSourceClubs, loadSourceClubsFromDB } from '../data/sourceData'
 import { useStore } from '../data/store'
-import { supabase } from '../data/supabase'
+import { writeOrQueue } from '../data/outbox'
 import PageLayout from '../components/PageLayout'
 import ExportButtons from '../components/ExportButtons'
 
@@ -233,7 +233,7 @@ export default function DashboardClubs() {
       <button
         onClick={async () => {
           if (!confirm('האם לאפס את כל הנוכחות במועדונים?')) return
-          await supabase.rpc('secure_clear_club_attendance', { caller_id: currentUser?.id })
+          await writeOrQueue('secure_clear_club_attendance', { caller_id: currentUser?.id })
           window.location.reload()
         }}
         style={{

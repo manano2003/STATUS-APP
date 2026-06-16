@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { useStore } from '../data/store'
 import { loadSchoolClassesFromDB, saveSchoolClassesToDB, getSchoolClassesFromCache } from '../data/sourceData'
 import { supabase } from '../data/supabase'
+import { writeOrQueue } from '../data/outbox'
 import SchoolHome from './SchoolHome'
 import * as XLSX from 'xlsx'
 
@@ -22,7 +23,7 @@ export default function SchoolStudents() {
 
   const deleteClass = async (className: string) => {
     if (!schoolId) return
-    await supabase.rpc('soft_delete_school_class', { caller_id: currentUser?.id || '', p_school_id: schoolId, p_class_name: className })
+    await writeOrQueue('soft_delete_school_class', { caller_id: currentUser?.id || '', p_school_id: schoolId, p_class_name: className })
     const updated = classes.filter(c => c.name !== className)
     setClasses(updated)
     localStorage.setItem(`school_classes_${schoolId}`, JSON.stringify(updated))

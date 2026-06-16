@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useStore } from '../data/store'
-import { supabase } from '../data/supabase'
+import { writeOrQueue } from '../data/outbox'
 import { getShelterById } from '../data/shelters'
 import PageLayout from '../components/PageLayout'
 
@@ -329,7 +329,7 @@ export default function UserDetail() {
           <button
             onClick={async () => {
               if (!confirm('האם לאפס את הסיסמה? המשתמש יתבקש לבחור סיסמה חדשה בכניסה הבאה.')) return
-              const { data } = await supabase.rpc('reset_pin', {
+              const data = await writeOrQueue('reset_pin', {
                 caller_id: currentUser!.id,
                 target_user_id: id,
               })

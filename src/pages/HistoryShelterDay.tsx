@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { getShelterById } from '../data/shelters'
 import { useStore } from '../data/store'
-import { supabase } from '../data/supabase'
+import { writeOrQueue } from '../data/outbox'
 import PageLayout from '../components/PageLayout'
 
 export default function HistoryShelterDay() {
@@ -26,7 +26,7 @@ export default function HistoryShelterDay() {
   const handleDelete = async () => {
     if (!snapshot || !currentUser) return
     if (!confirm('האם למחוק רישום זה מההיסטוריה?')) return
-    const { data } = await supabase.rpc('secure_delete_shelter_history', {
+    const data = await writeOrQueue('secure_delete_shelter_history', {
       caller_id: currentUser.id,
       history_id: snapshot.id,
     })
