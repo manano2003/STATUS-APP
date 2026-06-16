@@ -204,7 +204,7 @@ export default function SchoolsList() {
               cursor: 'pointer',
             }}
           >
-            + הוסף בית ספר
+            + הוסף מוסד חינוכי
           </button>
         </div>
       ) : (

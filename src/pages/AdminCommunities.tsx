@@ -41,7 +41,7 @@ export default function AdminCommunities() {
 
         <button onClick={() => navigate('/schools/councils')} style={buttonStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
           <span style={{ fontSize: '48px', display: 'block', marginBottom: '12px' }}>🏫</span>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text)' }}>בתי ספר</span>
+          <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text)' }}>מוסדות חינוך</span>
         </button>
 
         <button onClick={() => navigate('/admin/management')} style={buttonStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
