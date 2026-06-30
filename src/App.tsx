@@ -69,6 +69,8 @@ import ProtectedRoute from './components/ProtectedRoute'
 import AdminCommunities from './pages/AdminCommunities'
 import SchoolsCouncils from './pages/SchoolsCouncils'
 import SchoolsList from './pages/SchoolsList'
+import CouncilCategories from './pages/CouncilCategories'
+import CouncilCamps from './pages/CouncilCamps'
 import SchoolHome from './pages/SchoolHome'
 import SchoolManagement from './pages/SchoolManagement'
 import SchoolClasses from './pages/SchoolClasses'
@@ -112,7 +114,10 @@ export default function App() {
         <Route path="/communities/list" element={<ProtectedRoute feature="admin"><CommunitiesList /></ProtectedRoute>} />
         <Route path="/admin/management" element={<ProtectedRoute feature="admin"><AdminManagement /></ProtectedRoute>} />
         <Route path="/schools/councils" element={<ProtectedRoute feature="admin"><SchoolsCouncils /></ProtectedRoute>} />
-        <Route path="/schools/council/:councilId" element={<ProtectedRoute feature="admin"><SchoolsList /></ProtectedRoute>} />
+        <Route path="/schools/council/:councilId" element={<ProtectedRoute feature="admin"><CouncilCategories /></ProtectedRoute>} />
+        <Route path="/schools/council/:councilId/categories" element={<ProtectedRoute feature="admin"><CouncilCategories /></ProtectedRoute>} />
+        <Route path="/schools/council/:councilId/schools" element={<ProtectedRoute feature="admin"><SchoolsList /></ProtectedRoute>} />
+        <Route path="/schools/council/:councilId/camps" element={<ProtectedRoute feature="admin"><CouncilCamps /></ProtectedRoute>} />
         <Route path="/schools/council/:councilId/permissions" element={<ProtectedRoute feature="admin"><CouncilPermissions /></ProtectedRoute>} />
         <Route path="/schools/:schoolId" element={<ProtectedRoute feature="admin"><SchoolHome /></ProtectedRoute>} />
         <Route path="/schools/:schoolId/management" element={<ProtectedRoute feature="admin"><SchoolManagement /></ProtectedRoute>} />

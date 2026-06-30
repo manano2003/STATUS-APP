@@ -74,7 +74,10 @@ function getPageId(pathname: string): number | null {
   if (/^\/dashboard\/history\/clubs\/[^/]+\/[^/]+$/.test(pathname)) return 78
   if (/^\/dashboard\/history\/clubs\/[^/]+$/.test(pathname)) return 79
   if (/^\/schools\/council\/[^/]+\/permissions$/.test(pathname)) return 101
-  if (/^\/schools\/council\/[^/]+$/.test(pathname)) return 91
+  if (/^\/schools\/council\/[^/]+\/camps$/.test(pathname)) return 107
+  if (/^\/schools\/council\/[^/]+\/schools$/.test(pathname)) return 91
+  if (/^\/schools\/council\/[^/]+\/categories$/.test(pathname)) return 108
+  if (/^\/schools\/council\/[^/]+$/.test(pathname)) return 108
   if (/^\/schools\/[^/]+\/sources\/students$/.test(pathname)) return 100
   if (/^\/schools\/[^/]+\/sources\/users$/.test(pathname)) return 98
   if (/^\/schools\/[^/]+\/permissions$/.test(pathname)) return 99

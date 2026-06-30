@@ -83,7 +83,7 @@ export default function SchoolsList() {
   }
 
   return (
-    <PageLayout title="בתי ספר" subtitle={councilName} backTo="/schools/councils">
+    <PageLayout title="מוסדות חינוך" subtitle={councilName} backTo={`/schools/council/${councilId}/categories`}>
       {/* Permissions button */}
       <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '16px' }}>
         <button

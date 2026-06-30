@@ -76,7 +76,7 @@ export default function SchoolsCouncils() {
               }}
             >📷</button>
             <button
-              onClick={() => navigate(`/schools/council/${c.id}`)}
+              onClick={() => navigate(`/schools/council/${c.id}/categories`)}
               style={{
                 background: 'var(--color-bg-card)',
                 border: '1px solid var(--color-border)',
