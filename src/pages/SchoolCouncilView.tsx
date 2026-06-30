@@ -203,6 +203,32 @@ export default function SchoolCouncilView() {
                     </div>
                   )
                 })}
+                <div style={{ padding: '10px', borderTop: '1px solid var(--color-border)' }}>
+                  <button onClick={() => {
+                    const presentCount = Object.values(attendance).filter(v => v === true).length
+                    const absentCount = Object.values(attendance).filter(v => v === false).length
+                    let text = `כיתה ${cls.name}\n`
+                    if (teacher) text += `מורה: ${teacher.fullName}\n`
+                    text += `${cls.students.length} תלמידים | ${presentCount} נוכחים | ${absentCount} חסרים\n\n`
+                    cls.students.forEach(s => {
+                      const st = attendance[s]
+                      text += `${s} — ${st === true ? 'נוכח' : st === false ? 'לא נוכח' : ''}\n`
+                    })
+                    const w = window.open('', '_blank')
+                    if (w) {
+                      w.document.write(`<html dir="rtl"><head><title>כיתה ${cls.name}</title><style>body{font-family:Arial;padding:40px;direction:rtl}h1{color:#0A1628;border-bottom:2px solid #4DA6E8;padding-bottom:10px}pre{white-space:pre-wrap;font-family:Arial;font-size:14px;line-height:1.8}</style></head><body><h1>כיתה ${cls.name}</h1><pre>${text}</pre><script>window.print()<\/script></body></html>`)
+                      w.document.close()
+                    }
+                  }} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--color-border)', background: 'var(--color-bg-card)',
+                    color: 'var(--color-accent)', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+                    fontFamily: 'var(--font-family)',
+                  }}>
+                    <span style={{ fontSize: '18px' }}>🖨️</span> הדפסה
+                  </button>
+                </div>
               </div>
             )
           })()}
