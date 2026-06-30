@@ -336,8 +336,23 @@ export default function SchoolManagement() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <button onClick={async () => {
                   if (!schoolId) return
-                  // TODO: save to school history table before clearing
                   const today = new Date().toISOString().split('T')[0]
+                  // Save snapshot to history
+                  const snapshotData = classes.map(c => ({
+                    className: c.name,
+                    attendance: attendanceMap[c.name] || {},
+                    studentCount: c.students.length,
+                  }))
+                  const totalPresent = classes.reduce((sum, c) => {
+                    const att = attendanceMap[c.name] || {}
+                    return sum + Object.values(att).filter(v => v === true).length
+                  }, 0)
+                  await supabase.from('history_school_attendance').insert({
+                    school_id: schoolId, date: today, snapshot_data: snapshotData,
+                    total_students: classes.reduce((s, c) => s + c.students.length, 0),
+                    total_present: totalPresent,
+                  })
+                  // Clear attendance
                   for (const c of classes) {
                     await saveSchoolAttendanceToDB(schoolId, c.name, today, {}, currentUser?.id || '')
                   }
